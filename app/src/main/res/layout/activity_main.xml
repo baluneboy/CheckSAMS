@@ -9,12 +9,12 @@
     <TextClock
         android:id="@+id/textclock"
 
-        android:format12Hour="'GMT' yyyy-MM-dd  DOY / HH:mm:ss"
-        android:format24Hour="'GMT' yyyy-MM-dd  DOY / HH:mm:ss"
+        android:format12Hour="@string/styled_12_hour_clock"
+        android:format24Hour="@string/styled_24_hour_clock"
         android:timeZone="GMT+0000"
 
         android:textColor="#ffdc6e00"
-        android:textSize="20sp"
+        android:textSize="22sp"
 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

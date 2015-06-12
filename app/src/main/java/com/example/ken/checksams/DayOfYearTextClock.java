@@ -5,8 +5,9 @@ import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.TextClock;
+import android.widget.Toast;
 
-/**
+/** TODO actually get DOY working
  * Implementation of a {@link TextClock} with native support for day of year field D.
  *
  * @author Ken Hrovat
@@ -20,9 +21,7 @@ public class DayOfYearTextClock extends TextClock {
      * @param context The Context the widget is running in, through which it can
      *                access the current theme, resources, etc.
      */
-    public DayOfYearTextClock(Context context) {
-        this(context, null);
-    }
+    public DayOfYearTextClock(Context context) { this(context, null); }
 
     /**
      * Constructor that is called when inflating a widget from XML. This is called
@@ -42,6 +41,8 @@ public class DayOfYearTextClock extends TextClock {
      */
     public DayOfYearTextClock(Context context, AttributeSet attrs) {
         super(context, attrs);
+        Toast toast = Toast.makeText(context, "TODO: Make DOY Work", Toast.LENGTH_LONG);
+        toast.show();
     }
 
     /**
