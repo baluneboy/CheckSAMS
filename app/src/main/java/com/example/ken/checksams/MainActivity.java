@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.text.Html;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
@@ -48,31 +49,31 @@ import java.io.InputStreamReader;
 
 public class MainActivity extends Activity  {
 
-    Button b1;
-    Button b2;
-    private WebView wv1;
-    private TextView tv1;
-    private TextView tv2;
+    Button bUpdate;
+    Button bDetails;
+    private WebView wvKuAos;
+    private TextView tvResult;
+    private TextView tvDevices;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tv1 = (TextView) findViewById(R.id.indicatorRichTextView);
-        tv2 = (TextView) findViewById(R.id.textView2);
+        tvResult = (TextView) findViewById(R.id.resultRichTextView);
+        tvDevices = (TextView) findViewById(R.id.devicesRichTextView);
 
-        b1 = (Button) findViewById(R.id.button1);
-        b2 = (Button) findViewById(R.id.button2);
+        bUpdate = (Button) findViewById(R.id.updateButton);
+        bDetails = (Button) findViewById(R.id.detailsButton);
 
-        wv1 = (WebView) findViewById(R.id.webView);
-        wv1.setWebViewClient(new MyBrowser());
+        wvKuAos = (WebView) findViewById(R.id.kuAosWebView);
+        wvKuAos.setWebViewClient(new MyBrowser());
 
         showToast("Initial async update of both WebViews...", Toast.LENGTH_LONG);
         updateKuClip();
         updateSensorTimes();
 
-        b1.setOnClickListener(new View.OnClickListener() {
+        bUpdate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 updateKuClip();
@@ -80,16 +81,14 @@ public class MainActivity extends Activity  {
             }
         });
 
-        b2.setOnClickListener(new View.OnClickListener() {
+        bDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Spanned tmp = Html.fromHtml("&cent;");
                 String cent = tmp.toString();
                 showToast("Time for a smart ass remark...");
-                tv1.setText(String.format("Insert 25%s for details!", cent));
-                tv1.setTextColor(Color.RED);
-
-                new GetStringFromUrl().execute("http://pims.grc.nasa.gov/plots/user/sams/status/sensortimes.txt");
+                tvResult.setText(String.format("Insert 25%s for details!", cent));
+                tvResult.setTextColor(Color.RED);
             }
         });
 
@@ -130,18 +129,18 @@ public class MainActivity extends Activity  {
         text3.setSpan(new BackgroundColorSpan(Color.BLACK), 27, 31, 0);
 
         // make our ClickableSpans and URLSpans work
-        tv1.setMovementMethod(LinkMovementMethod.getInstance());
+        tvResult.setMovementMethod(LinkMovementMethod.getInstance());
 
         // shove our styled text into the TextView
-        tv1.setText(text3, TextView.BufferType.SPANNABLE);
+        tvResult.setText(text3, TextView.BufferType.SPANNABLE);
 
     }
 
     private void updateSensorTimes() {
         String url2 = "http://pims.grc.nasa.gov/plots/user/sams/status/sensortimes.txt";
         new GetStringFromUrl().execute(url2);
-        tv1.setText("The money line might change here.");
-        tv1.setTextColor(Color.BLACK);
+        tvResult.setText("The money line might change here.");
+        tvResult.setTextColor(Color.BLACK);
     }
 
     private void updateKuClip() {
@@ -171,7 +170,7 @@ public class MainActivity extends Activity  {
         Log.w("HERE IS text:", text.toString());
         String url = text.toString();
 
-        wv1.loadUrl(url);
+        wvKuAos.loadUrl(url);
 
     }
 
@@ -233,6 +232,35 @@ public class MainActivity extends Activity  {
             dialog = ProgressDialog.show(MainActivity.this, null, "Downloading...");
         }
 
+//        @Override
+//        protected String doInBackground(String... params) {
+//
+//            try {
+//                DefaultHttpClient httpClient = new DefaultHttpClient();
+//                HttpGet httpGet = new HttpGet(params[0]);
+//                HttpResponse response = httpClient.execute(httpGet);
+//                HttpEntity entity = response.getEntity();
+//
+//                BufferedHttpEntity buf = new BufferedHttpEntity(entity);
+//
+//                InputStream is = buf.getContent();
+//
+//                BufferedReader r = new BufferedReader(new InputStreamReader(is));
+//
+//                StringBuilder total = new StringBuilder();
+//                String line;
+//                while ((line = r.readLine()) != null) {
+//                    total.append(line + "\n");
+//                }
+//                String result = total.toString();
+//                Log.i("Get URL", "Downloaded string: " + result);
+//                return result;
+//            } catch (Exception e) {
+//                Log.e("Get Url", "Error in downloading: " + e.toString());
+//            }
+//            return null;
+//        }
+
         @Override
         protected String doInBackground(String... params) {
 
@@ -248,7 +276,7 @@ public class MainActivity extends Activity  {
 
                 BufferedReader r = new BufferedReader(new InputStreamReader(is));
 
-                StringBuilder total = new StringBuilder();
+                SpannableStringBuilder total = new SpannableStringBuilder();
                 String line;
                 while ((line = r.readLine()) != null) {
                     total.append(line + "\n");
@@ -266,14 +294,11 @@ public class MainActivity extends Activity  {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-            // change text view id for yourself
-            TextView textView = (TextView) findViewById(R.id.textView2);
-
             // show result in textView
             if (result == null) {
-                textView.setText("Error in downloading. Please try again.");
+                tvDevices.setText("Error in downloading. Please try again.");
             } else {
-                textView.setText(result);
+                tvDevices.setText(result);
             }
 
             // close progresses dialog

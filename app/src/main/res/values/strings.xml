@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">CheckSAMS</string>
-    <string name="sams_sensor_times">SAMS Sensor Times</string>
-    <string name="mams_gse_for_ku_aos">This is the money line.</string>
+    <string name="deviceTimesString">SAMS Sensor Times</string>
+    <string name="resultString">This is the money line.</string>
 
     <!-- button labels -->
-    <string name="update">Update</string>
-    <string name="details">Detail$</string>
+    <string name="updateButtonLabel">Update</string>
+    <string name="detailsButtonLabel">Detail$</string>
 
     <!-- not sure where this is used -->
     <string name="greeting">Hello There, Ken!</string>

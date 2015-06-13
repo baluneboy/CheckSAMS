@@ -7,7 +7,7 @@
 
     <!-- Use a fixed time zone -->
     <TextClock
-        android:id="@+id/textclock"
+        android:id="@+id/textClock"
 
         android:format12Hour="@string/styled_12_hour_clock"
         android:format24Hour="@string/styled_24_hour_clock"
@@ -20,49 +20,49 @@
         android:layout_height="wrap_content" />
 
     <TextView
-        android:id="@+id/indicatorRichTextView"
+        android:id="@+id/resultRichTextView"
 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/mams_gse_for_ku_aos"
-        android:layout_below="@+id/textclock"
+        android:text="@string/resultString"
+        android:layout_below="@+id/textClock"
 
         android:textColor="#ff0000ff"
         android:textSize="16sp" />
 
     <Button
-        android:id="@+id/button1"
-        android:text="@string/update"
+        android:id="@+id/updateButton"
+        android:text="@string/updateButtonLabel"
 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
 
-        android:layout_below="@+id/indicatorRichTextView"
+        android:layout_below="@+id/resultRichTextView"
         android:layout_alignParentStart="true"
-        android:layout_toLeftOf="@+id/button2" />
+        android:layout_toLeftOf="@+id/detailsButton" />
 
     <Button
-        android:id="@+id/button2"
-        android:text="@string/details"
+        android:id="@+id/detailsButton"
+        android:text="@string/detailsButtonLabel"
 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
 
-        android:layout_alignTop="@+id/button1"
+        android:layout_alignTop="@+id/updateButton"
         android:layout_alignParentEnd="true" />
 
     <WebView
-        android:id="@+id/webView"
+        android:id="@+id/kuAosWebView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-       android:layout_below="@+id/button2" />
+       android:layout_below="@+id/detailsButton" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/devicesRichTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="butt"
-        android:layout_below="@+id/webView"
+        android:layout_below="@+id/kuAosWebView"
         android:layout_alignParentStart="true"
         android:layout_marginTop="8dp" />
 
