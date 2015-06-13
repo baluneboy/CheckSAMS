@@ -48,15 +48,11 @@ import java.io.InputStreamReader;
 
 public class MainActivity extends Activity  {
 
-    private TextView tv1;
-
     Button b1;
     Button b2;
-
     private WebView wv1;
-    private WebView wv2;
-
-    TextView richTextView;
+    private TextView tv1;
+    private TextView tv2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,15 +60,13 @@ public class MainActivity extends Activity  {
         setContentView(R.layout.activity_main);
 
         tv1 = (TextView) findViewById(R.id.indicatorRichTextView);
+        tv2 = (TextView) findViewById(R.id.textView2);
 
         b1 = (Button) findViewById(R.id.button1);
         b2 = (Button) findViewById(R.id.button2);
 
         wv1 = (WebView) findViewById(R.id.webView);
         wv1.setWebViewClient(new MyBrowser());
-
-        wv2 = (WebView) findViewById(R.id.webView2);
-        wv2.setWebViewClient(new MyBrowser());
 
         showToast("Initial async update of both WebViews...", Toast.LENGTH_LONG);
         updateKuClip();
@@ -98,8 +92,6 @@ public class MainActivity extends Activity  {
                 new GetStringFromUrl().execute("http://pims.grc.nasa.gov/plots/user/sams/status/sensortimes.txt");
             }
         });
-
-        richTextView = (TextView) findViewById(R.id.textView1);
 
         // this is the text we'll be operating on
         SpannableString text = new SpannableString("Lorem ipsum dolor sit amet");
@@ -138,20 +130,16 @@ public class MainActivity extends Activity  {
         text3.setSpan(new BackgroundColorSpan(Color.BLACK), 27, 31, 0);
 
         // make our ClickableSpans and URLSpans work
-        richTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        tv1.setMovementMethod(LinkMovementMethod.getInstance());
 
         // shove our styled text into the TextView
-        richTextView.setText(text3, TextView.BufferType.SPANNABLE);
+        tv1.setText(text3, TextView.BufferType.SPANNABLE);
 
     }
 
     private void updateSensorTimes() {
         String url2 = "http://pims.grc.nasa.gov/plots/user/sams/status/sensortimes.txt";
-
-        wv2.getSettings().setLoadsImagesAutomatically(true);
-        wv2.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-        wv2.loadUrl(url2);
-
+        new GetStringFromUrl().execute(url2);
         tv1.setText("The money line might change here.");
         tv1.setTextColor(Color.BLACK);
     }
@@ -183,9 +171,8 @@ public class MainActivity extends Activity  {
         Log.w("HERE IS text:", text.toString());
         String url = text.toString();
 
-        //wv1.getSettings().setLoadsImagesAutomatically(true);
-        //wv1.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
         wv1.loadUrl(url);
+
     }
 
     private void showToast(String s, int duration) {
@@ -249,7 +236,6 @@ public class MainActivity extends Activity  {
         @Override
         protected String doInBackground(String... params) {
 
-            // @BadSkillz codes with same changes
             try {
                 DefaultHttpClient httpClient = new DefaultHttpClient();
                 HttpGet httpGet = new HttpGet(params[0]);
@@ -280,8 +266,8 @@ public class MainActivity extends Activity  {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-            // TODO change text view id for yourself
-            TextView textView = (TextView) findViewById(R.id.textView1);
+            // change text view id for yourself
+            TextView textView = (TextView) findViewById(R.id.textView2);
 
             // show result in textView
             if (result == null) {

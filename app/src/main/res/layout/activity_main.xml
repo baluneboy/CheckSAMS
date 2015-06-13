@@ -28,7 +28,7 @@
         android:layout_below="@+id/textclock"
 
         android:textColor="#ff0000ff"
-        android:textSize="20sp" />
+        android:textSize="16sp" />
 
     <Button
         android:id="@+id/button1"
@@ -57,18 +57,11 @@
         android:layout_height="wrap_content"
        android:layout_below="@+id/button2" />
 
-    <WebView
-        android:id="@+id/webView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textView1"
-        android:layout_marginTop="8dp" />
-
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Text"
+        android:text="butt"
         android:layout_below="@+id/webView"
         android:layout_alignParentStart="true"
         android:layout_marginTop="8dp" />
