@@ -1,8 +1,10 @@
 package com.example.ken.checksams;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.os.Environment;
@@ -20,12 +22,20 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.entity.BufferedHttpEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class MainActivity extends Activity  {
 
@@ -47,10 +57,10 @@ public class MainActivity extends Activity  {
         b1 = (Button) findViewById(R.id.button1);
         b2 = (Button) findViewById(R.id.button2);
 
-        wv1=(WebView)findViewById(R.id.webView);
+        wv1 = (WebView) findViewById(R.id.webView);
         wv1.setWebViewClient(new MyBrowser());
 
-        wv2=(WebView)findViewById(R.id.webView2);
+        wv2 = (WebView) findViewById(R.id.webView2);
         wv2.setWebViewClient(new MyBrowser());
 
         showToast("Initial async update of both WebViews...", Toast.LENGTH_LONG);
@@ -73,6 +83,8 @@ public class MainActivity extends Activity  {
                 showToast("Time for a smart ass remark...");
                 tv1.setText(String.format("Insert 25%s for details!", cent));
                 tv1.setTextColor(Color.RED);
+
+                new GetStringFromUrl().execute("http://pims.grc.nasa.gov/plots/user/sams/status/sensortimes.txt");
             }
         });
 
@@ -109,6 +121,7 @@ public class MainActivity extends Activity  {
         } catch (IOException e) {
             //You'll need to add proper error handling here
             Log.w("Unhandled IOException", e.getMessage());
+            Log.v("Hello", "There");
 
         }
 
@@ -165,4 +178,66 @@ public class MainActivity extends Activity  {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private class GetStringFromUrl extends AsyncTask<String, Void, String> {
+
+        ProgressDialog dialog ;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            // show progress dialog when downloading
+            dialog = ProgressDialog.show(MainActivity.this, null, "Downloading...");
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            // @BadSkillz codes with same changes
+            try {
+                DefaultHttpClient httpClient = new DefaultHttpClient();
+                HttpGet httpGet = new HttpGet(params[0]);
+                HttpResponse response = httpClient.execute(httpGet);
+                HttpEntity entity = response.getEntity();
+
+                BufferedHttpEntity buf = new BufferedHttpEntity(entity);
+
+                InputStream is = buf.getContent();
+
+                BufferedReader r = new BufferedReader(new InputStreamReader(is));
+
+                StringBuilder total = new StringBuilder();
+                String line;
+                while ((line = r.readLine()) != null) {
+                    total.append(line + "\n");
+                }
+                String result = total.toString();
+                Log.i("Get URL", "Downloaded string: " + result);
+                return result;
+            } catch (Exception e) {
+                Log.e("Get Url", "Error in downloading: " + e.toString());
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+            // TODO change text view id for yourself
+            TextView textView = (TextView) findViewById(R.id.textView1);
+
+            // show result in textView
+            if (result == null) {
+                textView.setText("Error in downloading. Please try again.");
+            } else {
+                textView.setText(result);
+            }
+
+            // close progresses dialog
+            dialog.dismiss();
+        }
+    }
+
 }
