@@ -1,3 +1,5 @@
+import android.util.Log;
+
 import java.util.Calendar;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,8 +86,6 @@ public class Hello {
 
         Log.w("HERE IS text:", text.toString());
         String url = text.toString();
-
-        wvKuAos.loadUrl(url);
 
     }	
 
