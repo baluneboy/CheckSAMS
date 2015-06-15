@@ -9,6 +9,7 @@ import android.os.Bundle;
 
 import android.os.Environment;
 import android.text.Html;
+import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -19,6 +20,7 @@ import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StrikethroughSpan;
+import android.text.style.StyleSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.Menu;
@@ -86,11 +88,22 @@ public class MainActivity extends Activity  {
             public void onClick(View v) {
                 Spanned tmp = Html.fromHtml("&cent;");
                 String cent = tmp.toString();
-                showToast("Time for a smart ass remark...");
+                showToast("Time for a wise crack...");
                 tvResult.setText(String.format("Insert 25%s for details!", cent));
                 tvResult.setTextColor(Color.RED);
             }
         });
+
+        // make our ClickableSpans and URLSpans work
+        tvResult.setMovementMethod(LinkMovementMethod.getInstance());
+
+        // shove our styled text into the TextView
+        //tvResult.setText(getSampleClunky(), TextView.BufferType.SPANNABLE);
+        tvResult.setText(getSampleSpannable(), TextView.BufferType.SPANNABLE);
+
+    }
+
+    private SpannableString getSampleClunky() {
 
         // this is the text we'll be operating on
         SpannableString text = new SpannableString("Lorem ipsum dolor sit amet");
@@ -128,12 +141,33 @@ public class MainActivity extends Activity  {
         text3.setSpan(new ForegroundColorSpan(Color.RED), 27, 31, 0);
         text3.setSpan(new BackgroundColorSpan(Color.BLACK), 27, 31, 0);
 
-        // make our ClickableSpans and URLSpans work
-        tvResult.setMovementMethod(LinkMovementMethod.getInstance());
+        return text3;
 
-        // shove our styled text into the TextView
-        tvResult.setText(text3, TextView.BufferType.SPANNABLE);
+    }
 
+    private SpannableString getSampleSpannable() {
+        SpannableStringBuilder deviceTime = new SpannableStringBuilder();
+
+        // year:doy:hour is plain
+        deviceTime.append("2015:165:11:");
+
+        // minute:second is bold
+        int start = deviceTime.length();
+        deviceTime.append("32:14 ");
+        deviceTime.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceTime.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        deviceTime.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, deviceTime.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        // device is linked to real-time plot
+        start = deviceTime.length();
+        deviceTime.append("Ku_AOS");
+        deviceTime.setSpan(new URLSpan("http://pims.grc.nasa.gov/plots/sams/121f03/121f03.jpg"), start, deviceTime.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        //deviceTime.setSpan(new ForegroundColorSpan(Color.GREEN), start, deviceTime.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        //deviceTime.setSpan(new BackgroundColorSpan(Color.BLUE), start, deviceTime.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        // category is plain
+        deviceTime.append(" gse_packet");
+
+        return SpannableString.valueOf(deviceTime);
     }
 
     private void updateSensorTimes() {
@@ -279,6 +313,7 @@ public class MainActivity extends Activity  {
                 SpannableStringBuilder total = new SpannableStringBuilder();
                 String line;
                 while ((line = r.readLine()) != null) {
+                    if(line.startsWith("begin") || line.startsWith("end") || line.startsWith("yyyy")) continue;
                     total.append(line + "\n");
                 }
                 String result = total.toString();
