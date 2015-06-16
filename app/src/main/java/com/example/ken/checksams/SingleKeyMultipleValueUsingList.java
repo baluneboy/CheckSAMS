@@ -18,6 +18,7 @@ import java.io.IOException;
 //import java.io.InputStream;
 //import java.io.InputStreamReader;
 
+import com.example.ken.checksams.Tuples.Tuple3;
 import com.example.ken.checksams.Tuples.Tuple4;
 
 public class SingleKeyMultipleValueUsingList {
@@ -42,7 +43,7 @@ public class SingleKeyMultipleValueUsingList {
 
 		// read device times file
 		String fname = "/home/pims/Documents/sensortimes.txt";
-		String ftxt = getTextFromFile(fname);
+		String ftxt = getMapFromFile(fname);
 		System.out.print(ftxt);
 
 		// try parse date time from string
@@ -126,6 +127,42 @@ public class SingleKeyMultipleValueUsingList {
 	    }
 	    return elapsed;
 	}	
+
+    private static String getMapFromFile(String fname) {
+    	
+		// create map to store
+        Map<String, Tuple3> map = new HashMap<String, Tuple3>();    	
+    	
+        //Get the text file
+        File file = new File(fname);
+
+        //Read text from file
+        StringBuilder text = new StringBuilder();
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+            	//FIXME this requires regex match NOT if begin/end
+            	if ( line.startsWith("begin") || line.startsWith("end") ) continue;
+                //Tuple3<Date, String, String> returnValue1 = Tuples.tuple4(date1, "GSE", "wtf");
+                //map.put("Ku_AOS", returnValue1);           	
+                text.append(line);
+                text.append('\n');
+            }
+            br.close();
+        } catch (IOException e) {
+            //You'll need to add proper error handling here
+			System.out.println("IOException");
+
+        }
+
+        String result = text.toString();
+        
+        return result;
+
+    }	
 	
     private static String getTextFromFile(String fname) {
         //Get the text file
