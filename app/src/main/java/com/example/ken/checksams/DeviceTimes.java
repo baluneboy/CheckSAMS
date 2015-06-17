@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,7 +83,7 @@ public class DeviceTimes {
      ***********************************************************/
     public String toString()
     {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd,DDD/hh:mm:ss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd,DDD/HH:mm:ss");
         String t = dateFormat.format(time);
         String buffer = String.format("%s %-9s %-9s", t, device, tag);
         buffer += String.format("  dHo = %9.1fs,", deltaHost);
@@ -145,24 +146,30 @@ public class DeviceTimes {
     }
 
     public static void main( String args[] ){
-    	
-    	// Get device times mapping from text file
-    	Map<String, DeviceTimes> map = getMapFromFile("/misc/yoda/www/plots/user/sams/status/sensortimes.txt");
         
+    	// Get device times mapping from text file
+        Map<String,DeviceTimes> map = getMapFromFile("/misc/yoda/www/plots/user/sams/status/sensortimes.txt");
+        DeviceTimesComparator dtc =  new DeviceTimesComparator(map);
+        TreeMap<String,DeviceTimes> sorted_map = new TreeMap<String,DeviceTimes>(dtc);
+        
+        // Sort by GMT
+        sorted_map.putAll(map); 
+    	
     	// Iterate to display mapped values
-        System.out.println("Displaying Keys and Corresponding, Multiple DeviceTimes:");
+    	// Iterate to display sorted mapped values
         try {
-            for (Map.Entry<String, DeviceTimes> entry: map.entrySet()) {
+            for (Map.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
                 //String key = entry.getKey();
                 DeviceTimes dev = entry.getValue();
                 dev.setDelta(map.get("host"));
                 dev.setDelta(map.get("ku_aos"));
                 System.out.println(dev);
+                if (dev.device.equals("host")) System.out.println(new String(new char[80]).replace("\0", "-"));
             }
         } catch (Exception e) {
             //You'll need to add proper error handling here
-            System.out.println("DO NOT HAVE BOTH Ku_AOS AND HOST ENTRIES IN MAP.");
-        }    	
+            System.out.println("SOMETHING WRONG WITH ENTRIES IN MAP...GOT ku_aos AND host ENTRIES?");
+        }     	
     }
     
     private static Map<String, DeviceTimes> getMapFromFile(String fname) {
@@ -188,7 +195,7 @@ public class DeviceTimes {
             //You'll need to add proper error handling here
 			System.out.println("IOException");
         }
-       
+        
         return map;
 
     }	

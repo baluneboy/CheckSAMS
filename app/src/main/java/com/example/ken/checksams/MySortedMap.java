@@ -77,9 +77,9 @@ class DeviceTimesComparator implements Comparator<String> {
     	Long aTime = t1.getTimeInMillis();
     	Long bTime = t2.getTimeInMillis(); 	
         if (aTime >= bTime) {
-            return 1;
-        } else {
             return -1;
+        } else {
+            return 1;
         } // returning 0 would merge keys
     }
 }
