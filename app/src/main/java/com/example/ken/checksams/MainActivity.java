@@ -48,6 +48,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TreeMap;
+
+import static java.lang.String.*;
+
+import com.example.ken.checksams.DeviceTimes;
 
 public class MainActivity extends Activity  {
 
@@ -89,7 +96,7 @@ public class MainActivity extends Activity  {
                 Spanned tmp = Html.fromHtml("&cent;");
                 String cent = tmp.toString();
                 showToast("Time for a wise crack...");
-                tvResult.setText(String.format("Insert 25%s for details!", cent));
+                tvResult.setText(format("Insert 25%s for details!", cent));
                 tvResult.setTextColor(Color.RED);
             }
         });
@@ -164,7 +171,7 @@ public class MainActivity extends Activity  {
         //deviceTime.setSpan(new ForegroundColorSpan(Color.GREEN), start, deviceTime.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         //deviceTime.setSpan(new BackgroundColorSpan(Color.BLUE), start, deviceTime.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        // category is plain
+        // category is just a plain span
         deviceTime.append(" gse_packet");
 
         return SpannableString.valueOf(deviceTime);
@@ -266,35 +273,6 @@ public class MainActivity extends Activity  {
             dialog = ProgressDialog.show(MainActivity.this, null, "Downloading...");
         }
 
-//        @Override
-//        protected String doInBackground(String... params) {
-//
-//            try {
-//                DefaultHttpClient httpClient = new DefaultHttpClient();
-//                HttpGet httpGet = new HttpGet(params[0]);
-//                HttpResponse response = httpClient.execute(httpGet);
-//                HttpEntity entity = response.getEntity();
-//
-//                BufferedHttpEntity buf = new BufferedHttpEntity(entity);
-//
-//                InputStream is = buf.getContent();
-//
-//                BufferedReader r = new BufferedReader(new InputStreamReader(is));
-//
-//                StringBuilder total = new StringBuilder();
-//                String line;
-//                while ((line = r.readLine()) != null) {
-//                    total.append(line + "\n");
-//                }
-//                String result = total.toString();
-//                Log.i("Get URL", "Downloaded string: " + result);
-//                return result;
-//            } catch (Exception e) {
-//                Log.e("Get Url", "Error in downloading: " + e.toString());
-//            }
-//            return null;
-//        }
-
         @Override
         protected String doInBackground(String... params) {
 
@@ -310,6 +288,7 @@ public class MainActivity extends Activity  {
 
                 BufferedReader r = new BufferedReader(new InputStreamReader(is));
 
+                // FIXME this should be StringBuilder not SpannableStringBuilder
                 SpannableStringBuilder total = new SpannableStringBuilder();
                 String line;
                 while ((line = r.readLine()) != null) {
@@ -333,7 +312,67 @@ public class MainActivity extends Activity  {
             if (result == null) {
                 tvDevices.setText("Error in downloading. Please try again.");
             } else {
-                tvDevices.setText(result);
+
+                // at this point, result is big string with newline characters
+                TreeMap<String,DeviceTimes> sorted_map = DeviceTimes.getSortedMap(result);
+
+                // now we have sorted map, so iterate to build sorted, formatted spannables
+                SpannableStringBuilder deviceLines = new SpannableStringBuilder();
+                try {
+                    for (TreeMap.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
+                        DeviceTimes dev = entry.getValue();
+
+                        // FIXME when we are on host, entire lines background gets good color
+
+                        // TODO make a home for snippet keeper for repeat character like this
+                        // the next line shows how to repeat char "-" 80 times
+                        //    Log.i("SEP", new String(new char[80]).replace("\0", "-"));
+
+                        // device time is plain
+                        Date t = dev.getTime();
+                        SimpleDateFormat ydf = new SimpleDateFormat("yyyy:DDD:");
+                        deviceLines.append(ydf.format(t));
+
+                        int start = deviceLines.length();
+                        SimpleDateFormat hmsf = new SimpleDateFormat("HH:mm:ss");
+                        deviceLines.append(hmsf.format(t));
+                        deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                        // device name is clickable linked to WHAT?
+                        deviceLines.append(" ");
+                        start = deviceLines.length();
+                        deviceLines.append(dev.getDevice());
+                        deviceLines.setSpan(new URLSpan("http://pims.grc.nasa.gov/plots/sams/121f03/121f03.jpg"), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                        // device tag is plain
+                        deviceLines.append(" ");
+                        start = deviceLines.length();
+                        deviceLines.append(dev.getTag());
+                        deviceLines.setSpan(new ForegroundColorSpan(Color.GREEN), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        deviceLines.setSpan(new BackgroundColorSpan(Color.BLUE), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                        // deltaHost is just a plain span
+                        deviceLines.append(" ");
+                        //start = deviceLines.length();
+                        deviceLines.append(dev.getDeltaHost() + " ");
+                        //deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        //deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                        deviceLines.append("\n");
+
+                    }
+                } catch (Exception e) {
+                    //You'll need to add proper error handling here
+                    Log.i("EXCEPT", "SOMETHING WRONG WITH ENTRIES IN MAP...GOT ku_aos AND host ENTRIES?");
+                }
+
+                // make our ClickableSpans and URLSpans work
+                tvDevices.setMovementMethod(LinkMovementMethod.getInstance());
+
+                // populate textview with device times info
+                tvDevices.setText(SpannableString.valueOf(deviceLines), TextView.BufferType.SPANNABLE);
+
             }
 
             // close progresses dialog

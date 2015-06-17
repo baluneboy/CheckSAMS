@@ -1,5 +1,7 @@
 package com.example.ken.checksams;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -146,23 +148,20 @@ public class DeviceTimes {
     }
 
     public static void main( String args[] ){
-        
-    	// Get device times mapping from text file
+
+/*    	// Get device times mapping from text file
         Map<String,DeviceTimes> map = getMapFromFile("/misc/yoda/www/plots/user/sams/status/sensortimes.txt");
         DeviceTimesComparator dtc =  new DeviceTimesComparator(map);
-        TreeMap<String,DeviceTimes> sorted_map = new TreeMap<String,DeviceTimes>(dtc);
-        
-        // Sort by GMT
-        sorted_map.putAll(map); 
-    	
-    	// Iterate to display mapped values
+        TreeMap<String,DeviceTimes> sorted_map = new TreeMap<String,DeviceTimes>(dtc);*/
+
+        // Get device times mapping from result text (string)
+        String result = "2015-06-17 butters host\n--------------------------------------\nbegin\n2015:168:20:09:00 butters HOST\n2015:168:20:09:15 Ku_AOS GSE\n2015:168:20:09:15 122-f02 EE\n2015:168:20:09:16 122-f03 EE";
+        TreeMap<String,DeviceTimes> sorted_map = getSortedMap(result);
+
     	// Iterate to display sorted mapped values
         try {
-            for (Map.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
-                //String key = entry.getKey();
+            for (TreeMap.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
                 DeviceTimes dev = entry.getValue();
-                dev.setDelta(map.get("host"));
-                dev.setDelta(map.get("ku_aos"));
                 System.out.println(dev);
                 if (dev.device.equals("host")) System.out.println(new String(new char[80]).replace("\0", "-"));
             }
@@ -171,7 +170,56 @@ public class DeviceTimes {
             System.out.println("SOMETHING WRONG WITH ENTRIES IN MAP...GOT ku_aos AND host ENTRIES?");
         }     	
     }
-    
+
+    public static TreeMap<String, DeviceTimes> getSortedMap( String result ){
+
+        // Get device times mapping from result text (string)
+        Map<String,DeviceTimes> map = getMapFromResultString(result);
+        DeviceTimesComparator dtc =  new DeviceTimesComparator(map);
+        TreeMap<String,DeviceTimes> sorted_map = new TreeMap<String,DeviceTimes>(dtc);
+
+        // Sort by GMT
+        sorted_map.putAll(map);
+
+        // Iterate to display sorted mapped values
+        try {
+            for (Map.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
+                DeviceTimes dev = entry.getValue();
+                dev.setDelta(map.get("host"));
+                dev.setDelta(map.get("ku_aos"));
+                //System.out.println(dev);
+                //if (dev.device.equals("host")) System.out.println(new String(new char[80]).replace("\0", "-"));
+            }
+        } catch (Exception e) {
+            //You'll need to add proper error handling here
+            //System.out.println("SOMETHING WRONG WITH ENTRIES IN MAP...GOT ku_aos AND host ENTRIES?");
+            e.printStackTrace();
+        }
+
+        return sorted_map;
+    }
+
+    private static Map<String, DeviceTimes> getMapFromResultString(String result) {
+
+        // Iterate over lines, put usable ones into map
+        Map<String, DeviceTimes> map = new HashMap<String, DeviceTimes>();
+
+        String[] lines = result.split("\\r?\\n");
+        for (String line: lines) {
+            System.out.println("LINE IS: " + line);
+            // FIXME next if lines should be regular expression match
+            //       or maybe try/catch around 2 lines below the if lines?
+            if (line.startsWith("begin") || line.startsWith("end")) continue;
+            if (line.startsWith("2015-") || line.startsWith("---")) continue;
+            if (line.startsWith("yyyy") || line.startsWith("xxx")) continue;
+            DeviceTimes dt = new DeviceTimes(line);
+            map.put(dt.device, dt);
+        }
+
+        return map;
+
+    }
+
     private static Map<String, DeviceTimes> getMapFromFile(String fname) {
         //Get the text file
         File file = new File(fname);
