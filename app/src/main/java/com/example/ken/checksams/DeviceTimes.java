@@ -1,5 +1,9 @@
 package com.example.ken.checksams;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -69,20 +73,20 @@ public class DeviceTimes {
     /**********************************************************
      Method:         toString
      Purpose:        Convert the internal representation of DeviceTimes,
-                    into a String which could then be printed to the screen
+                     to a String which could then be printed to the screen
      Parameters:     None
      Preconditions:  None
      Postconditions: The value of the "this" object will be converted
-                        to a String
-     Returns:        A String representation of the "this" fraction
+                     to a String
+     Returns:        A String representation of the "this" object
      ***********************************************************/
     public String toString()
     {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd,DDD/hh:mm:ss");
         String t = dateFormat.format(time);
-        String buffer = t + " " + device + " " + tag;
-        if (deltaHost != null) buffer += ", dh = " + deltaHost + "s";
-        if (deltaKu != null) buffer += ", dk = " + deltaKu + "s";
+        String buffer = String.format("%s %-9s %-9s", t, device, tag);
+        buffer += String.format("  dHo = %9.1fs,", deltaHost);
+        buffer += String.format("  dKu = %9.1fs", deltaKu);
         return buffer;
     }
 
@@ -141,39 +145,54 @@ public class DeviceTimes {
     }
 
     public static void main( String args[] ){
-
-        // String to be scanned to find the pattern.
-        List<String> lineList = new ArrayList<String>();
-        lineList.add("2015:166:23:18:00 butters HOST");
-        lineList.add("2015:166:23:18:14 Ku_AOS GSE");
-        lineList.add("2015:166:23:18:15 121f03rt SE");
-
-        // Create map and put to store
-        Map<String, DeviceTimes> map = new HashMap<String, DeviceTimes>();
-        for (int i = 0; i < lineList.size(); i++) {
-            String line = lineList.get(i);
-            DeviceTimes dt = new DeviceTimes(line);
-            map.put(dt.device, dt);
-        }
-
-        // Iterate to display mapped values
-        System.out.println("Fetching Keys and Corresponding, Multiple Values");
+    	
+    	// Get device times mapping from text file
+    	Map<String, DeviceTimes> map = getMapFromFile("/misc/yoda/www/plots/user/sams/status/sensortimes.txt");
+        
+    	// Iterate to display mapped values
+        System.out.println("Displaying Keys and Corresponding, Multiple DeviceTimes:");
         try {
             for (Map.Entry<String, DeviceTimes> entry: map.entrySet()) {
-                String key = entry.getKey();
-                DeviceTimes value = entry.getValue();
-                value.setDelta(map.get("host"));
-                value.setDelta(map.get("ku_aos"));
-                System.out.print("Key = " + key + " >> ");
-                System.out.println("Value = " + value);
+                //String key = entry.getKey();
+                DeviceTimes dev = entry.getValue();
+                dev.setDelta(map.get("host"));
+                dev.setDelta(map.get("ku_aos"));
+                System.out.println(dev);
             }
         } catch (Exception e) {
             //You'll need to add proper error handling here
             System.out.println("DO NOT HAVE BOTH Ku_AOS AND HOST ENTRIES IN MAP.");
-        }
-
+        }    	
     }
-        
+    
+    private static Map<String, DeviceTimes> getMapFromFile(String fname) {
+        //Get the text file
+        File file = new File(fname);
+
+        //Read text from file, put into map
+        Map<String, DeviceTimes> map = new HashMap<String, DeviceTimes>();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = br.readLine()) != null) {
+            	// FIXME next if lines should be regular expression match
+            	//       or maybe try/catch around 2 lines below the if lines?
+            	if ( line.startsWith("begin") || line.startsWith("end") ) continue;
+            	if ( line.startsWith("2015-") || line.startsWith("---") ) continue;            	
+            	if ( line.startsWith("yyyy")  || line.startsWith("xxx") ) continue;            	
+                DeviceTimes dt = new DeviceTimes(line);
+                map.put(dt.device, dt);
+            }
+            br.close();
+        } catch (IOException e) {
+            //You'll need to add proper error handling here
+			System.out.println("IOException");
+        }
+       
+        return map;
+
+    }	
+    
     public static void showMatch(Boolean bFound, Matcher m) {
         if (bFound) {
             System.out.println("matcher count: " + m.groupCount());
@@ -186,7 +205,7 @@ public class DeviceTimes {
         
     }
     
-    public static Tuple3<Date, String, String> getMatch(String line) {
+/*    public static Tuple3<Date, String, String> getMatch(String line) {
     	//String pattern = "(\\d{4}):(\\d+):(\\d{2}):(\\d{2}):(\\d{2})\\s(.*)\\s(.*)";
     	String pattern = "(\\d{4}:\\d+:\\d{2}:\\d{2}:\\d{2})\\s(.*)\\s(.*)";
     	
@@ -212,6 +231,6 @@ public class DeviceTimes {
 	        return null;			
 		}        
         
-    }
+    }*/
     
 }
