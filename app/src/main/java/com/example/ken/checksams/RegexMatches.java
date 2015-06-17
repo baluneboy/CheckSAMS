@@ -1,7 +1,5 @@
 package com.example.ken.checksams;
 
-import java.awt.List;
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,7 +41,7 @@ public class RegexMatches
         Boolean bFound = m.find();
         
         // Show match
-        //showMatch(bFound, m);
+        showMatch(bFound, m);
         
         Tuple3<String, String, String> returnValue3 = Tuples.tuple3(m.group(5), m.group(6), m.group(7));
         
