@@ -110,48 +110,6 @@ public class MainActivity extends Activity  {
 
     }
 
-    private SpannableString getSampleClunky() {
-
-        // this is the text we'll be operating on
-        SpannableString text = new SpannableString("Lorem ipsum dolor sit amet");
-
-        // make "Lorem" (characters 0 to 5) red
-        text.setSpan(new ForegroundColorSpan(Color.RED), 0, 5, 0);
-
-        // make "ipsum" (characters 6 to 11) one and a half time bigger than the textbox
-        text.setSpan(new RelativeSizeSpan(1.5f), 6, 11, 0);
-
-        // make "dolor" (characters 12 to 17) display a toast message when touched
-        final Context context = this;
-        ClickableSpan clickableSpan = new ClickableSpan() {
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(context, "dolor", Toast.LENGTH_LONG).show();
-            }
-        };
-        text.setSpan(clickableSpan, 12, 17, 0);
-
-        // make "sit" (characters 18 to 21) struck through
-        text.setSpan(new StrikethroughSpan(), 18, 21, 0);
-
-        // make "amet" (characters 22 to 26) twice as big, green and a link to this site.
-        // it's important to set the color after the URLSpan or the standard
-        // link color will override it.
-        text.setSpan(new RelativeSizeSpan(2f), 22, 26, 0);
-        text.setSpan(new URLSpan("http://www.chrisumbel.com"), 22, 26, 0);
-        text.setSpan(new ForegroundColorSpan(Color.GREEN), 22, 26, 0);
-        text.setSpan(new BackgroundColorSpan(Color.BLUE), 22, 26, 0);
-
-        SpannableString text2 = new SpannableString(" Ciao!");
-        SpannableString text3 = new SpannableString( TextUtils.concat(text, text2) );
-
-        text3.setSpan(new ForegroundColorSpan(Color.RED), 27, 31, 0);
-        text3.setSpan(new BackgroundColorSpan(Color.BLACK), 27, 31, 0);
-
-        return text3;
-
-    }
-
     private SpannableString getSampleSpannable() {
         SpannableStringBuilder deviceTime = new SpannableStringBuilder();
 
@@ -317,61 +275,13 @@ public class MainActivity extends Activity  {
                 TreeMap<String,DeviceTimes> sorted_map = DeviceTimes.getSortedMap(result);
 
                 // now we have sorted map, so iterate to build sorted, formatted spannables
-                SpannableStringBuilder deviceLines = new SpannableStringBuilder();
-                try {
-                    for (TreeMap.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
-                        DeviceTimes dev = entry.getValue();
-
-                        // FIXME when we are on host, entire lines background gets good color
-
-                        // TODO make a home for snippet keeper for repeat character like this
-                        // the next line shows how to repeat char "-" 80 times
-                        //    Log.i("SEP", new String(new char[80]).replace("\0", "-"));
-
-                        // device time is plain
-                        Date t = dev.getTime();
-                        SimpleDateFormat ydf = new SimpleDateFormat("yyyy:DDD:");
-                        deviceLines.append(ydf.format(t));
-
-                        int start = deviceLines.length();
-                        SimpleDateFormat hmsf = new SimpleDateFormat("HH:mm:ss");
-                        deviceLines.append(hmsf.format(t));
-                        deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                        // device name is clickable linked to WHAT?
-                        deviceLines.append(" ");
-                        start = deviceLines.length();
-                        deviceLines.append(dev.getDevice());
-                        deviceLines.setSpan(new URLSpan("http://pims.grc.nasa.gov/plots/sams/121f03/121f03.jpg"), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                        // device tag is plain
-                        deviceLines.append(" ");
-                        start = deviceLines.length();
-                        deviceLines.append(dev.getTag());
-                        deviceLines.setSpan(new ForegroundColorSpan(Color.GREEN), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        deviceLines.setSpan(new BackgroundColorSpan(Color.BLUE), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                        // deltaHost is just a plain span
-                        deviceLines.append(" ");
-                        //start = deviceLines.length();
-                        deviceLines.append(dev.getDeltaHost() + " ");
-                        //deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        //deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                        deviceLines.append("\n");
-
-                    }
-                } catch (Exception e) {
-                    //You'll need to add proper error handling here
-                    Log.i("EXCEPT", "SOMETHING WRONG WITH ENTRIES IN MAP...GOT ku_aos AND host ENTRIES?");
-                }
+                SpannableString resultSpannable = DeviceTimes.getSpannableFromMap(sorted_map);
 
                 // make our ClickableSpans and URLSpans work
                 tvDevices.setMovementMethod(LinkMovementMethod.getInstance());
 
-                // populate textview with device times info
-                tvDevices.setText(SpannableString.valueOf(deviceLines), TextView.BufferType.SPANNABLE);
+                // populate textview with device times info in spannable form
+                tvDevices.setText(resultSpannable, TextView.BufferType.SPANNABLE);
 
             }
 

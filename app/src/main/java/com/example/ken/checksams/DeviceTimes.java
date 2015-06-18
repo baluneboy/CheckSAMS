@@ -1,5 +1,15 @@
 package com.example.ken.checksams;
 
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
+import android.text.style.TypefaceSpan;
+import android.text.style.URLSpan;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -38,6 +48,8 @@ public class DeviceTimes {
     // constants
     private static final String pattern = "(\\d{4}:\\d+:\\d{2}:\\d{2}:\\d{2})\\s(.*)\\s(.*)";
     private static final Pattern rx = Pattern.compile(pattern);
+    private static final SimpleDateFormat YYYYDDD = new SimpleDateFormat("yyyy:DDD:");
+    private static final SimpleDateFormat HHMMSS = new SimpleDateFormat("HH:mm:ss");
 
     /**********************************************************
      Method:         Default Constructor
@@ -147,12 +159,15 @@ public class DeviceTimes {
         return diff;
     }
 
-    public static void main( String args[] ){
+    private static String padRight(String s, int n) {
+        return String.format("%1$-" + n + "s", s);
+    }
 
-/*    	// Get device times mapping from text file
-        Map<String,DeviceTimes> map = getMapFromFile("/misc/yoda/www/plots/user/sams/status/sensortimes.txt");
-        DeviceTimesComparator dtc =  new DeviceTimesComparator(map);
-        TreeMap<String,DeviceTimes> sorted_map = new TreeMap<String,DeviceTimes>(dtc);*/
+    private static String padLeft(String s, int n) {
+        return String.format("%1$" + n + "s", s);
+    }
+
+    public static void main( String args[] ) throws Exception {
 
         // Get device times mapping from result text (string)
         String result = "2015-06-17 butters host\n--------------------------------------\nbegin\n2015:168:20:09:00 butters HOST\n2015:168:20:09:15 Ku_AOS GSE\n2015:168:20:09:15 122-f02 EE\n2015:168:20:09:16 122-f03 EE";
@@ -168,7 +183,14 @@ public class DeviceTimes {
         } catch (Exception e) {
             //You'll need to add proper error handling here
             System.out.println("SOMETHING WRONG WITH ENTRIES IN MAP...GOT ku_aos AND host ENTRIES?");
-        }     	
+        }
+
+        System.out.println(padRight("Howto", 20) + "*");
+        System.out.println(padLeft("Howto", 20) + "*");
+        System.out.println(String.format("%6.1f", -999.89f));
+        System.out.println(String.format("%6.1f", 999.89f));
+        System.out.println(String.format("%6.1f", 1.23f));
+
     }
 
     public static TreeMap<String, DeviceTimes> getSortedMap( String result ){
@@ -181,14 +203,12 @@ public class DeviceTimes {
         // Sort by GMT
         sorted_map.putAll(map);
 
-        // Iterate to display sorted mapped values
+        // Iterate sorted_map entries to establish deltas
         try {
             for (Map.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
                 DeviceTimes dev = entry.getValue();
                 dev.setDelta(map.get("host"));
                 dev.setDelta(map.get("ku_aos"));
-                //System.out.println(dev);
-                //if (dev.device.equals("host")) System.out.println(new String(new char[80]).replace("\0", "-"));
             }
         } catch (Exception e) {
             //You'll need to add proper error handling here
@@ -259,33 +279,79 @@ public class DeviceTimes {
         }
         
     }
-    
-/*    public static Tuple3<Date, String, String> getMatch(String line) {
-    	//String pattern = "(\\d{4}):(\\d+):(\\d{2}):(\\d{2}):(\\d{2})\\s(.*)\\s(.*)";
-    	String pattern = "(\\d{4}:\\d+:\\d{2}:\\d{2}:\\d{2})\\s(.*)\\s(.*)";
-    	
-        // Create a Pattern object
-        Pattern r = Pattern.compile(pattern);
 
-        // Now create matcher object.
-        Matcher m = r.matcher(line);
-        Boolean bFound = m.find();
-        
-        // Show match
-        //showMatch(bFound, m);
+    public static SpannableString getSpannableFromMap(TreeMap<String, DeviceTimes> sorted_map) {
 
-        // convert string to datetime
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy:DDD:HH:mm:ss");
-		try {
-            Date date1 = simpleDateFormat.parse(m.group(1));        	
-	        Tuple3<Date, String, String> returnValue3 = Tuples.tuple3(date1, m.group(2), m.group(3));
-	        return returnValue3;
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-	        return null;			
-		}        
-        
-    }*/
-    
+        int start;
+
+        // now we have sorted map, so iterate to build sorted, formatted spannables
+        SpannableStringBuilder deviceLines = new SpannableStringBuilder();
+        try {
+            for (TreeMap.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
+                DeviceTimes dev = entry.getValue();
+                Date t = dev.getTime();
+
+                // FIXME when we are on host, entire lines background gets distinct color
+                // FIXME user config for dimmed devices
+
+                // TODO make a home for snippet keeper for repeat character like this
+                // the next line shows how to repeat char "-" 80 times
+                //    Log.i("SEP", new String(new char[80]).replace("\0", "-"));
+
+                // if host, then make this a distinctive line in the sand
+                if (dev.getDevice().equals("host")) {
+
+                    start = deviceLines.length();
+
+                    deviceLines.append(YYYYDDD.format(t));
+                    deviceLines.append(HHMMSS.format(t));
+                    deviceLines.append(String.format("  %6.1f", dev.getDeltaHost()));
+                    deviceLines.append(String.format("  %6.1f", dev.getDeltaKu()));
+                    deviceLines.append(" " + dev.getDevice());
+                    deviceLines.setSpan(new ForegroundColorSpan(Color.WHITE), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    deviceLines.setSpan(new BackgroundColorSpan(Color.BLACK), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                }
+                else {
+
+                    // device time YYYY:DDD: is plain
+                    deviceLines.append(YYYYDDD.format(t));
+
+                    // device time HH:MM:SS is orange
+                    start = deviceLines.length();
+                    deviceLines.append(HHMMSS.format(t));
+                    deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    // deltaHost is just a plain span
+                    //start = deviceLines.length();
+                    deviceLines.append(String.format("  %6.1f", dev.getDeltaHost()));
+                    //deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    //deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    // deltaKu is just a plain span
+                    //start = deviceLines.length();
+                    deviceLines.append(String.format("  %6.1f", dev.getDeltaKu()));
+                    //deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    //deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    // device name is clickable linked to WHAT?
+                    deviceLines.append(" ");
+                    start = deviceLines.length();
+                    deviceLines.append(padRight(dev.getDevice(), 12));
+                    //deviceLines.setSpan(new URLSpan("http://pims.grc.nasa.gov/plots/sams/121f03/121f03.jpg"), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                }
+
+                deviceLines.append("\n");
+
+            }
+        } catch (Exception e) {
+            //You'll need to add proper error handling here
+            Log.i("EXCEPT", "SOMETHING WRONG WITH ENTRIES IN MAP...GOT ku_aos AND host ENTRIES?");
+        }
+
+        return SpannableString.valueOf(deviceLines);
+
+    }
+
 }
