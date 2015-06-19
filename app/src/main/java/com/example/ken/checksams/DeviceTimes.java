@@ -291,7 +291,7 @@ public class DeviceTimes {
                 DeviceTimes dev = entry.getValue();
                 Date t = dev.getTime();
 
-                // FIXME when we are on host, entire lines background gets distinct color
+                // FIXME when we are get to host entry, entire lines background gets distinct color
                 // FIXME user config for dimmed devices
 
                 // TODO make a home for snippet keeper for repeat character like this
@@ -305,9 +305,9 @@ public class DeviceTimes {
 
                     deviceLines.append(YYYYDDD.format(t));
                     deviceLines.append(HHMMSS.format(t));
-                    deviceLines.append(String.format("  %6.1f", dev.getDeltaHost()));
-                    deviceLines.append(String.format("  %6.1f", dev.getDeltaKu()));
-                    deviceLines.append(" " + dev.getDevice());
+                    deviceLines.append(String.format(" %6.1f", dev.getDeltaHost()));
+                    deviceLines.append(String.format(" %6.1f", dev.getDeltaKu()));
+                    deviceLines.append("  " + dev.getDevice() + "      ");
                     deviceLines.setSpan(new ForegroundColorSpan(Color.WHITE), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     deviceLines.setSpan(new BackgroundColorSpan(Color.BLACK), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
@@ -324,18 +324,34 @@ public class DeviceTimes {
 
                     // deltaHost is just a plain span
                     //start = deviceLines.length();
-                    deviceLines.append(String.format("  %6.1f", dev.getDeltaHost()));
+                    float dh = dev.getDeltaHost();
+                    if (dh < -999.9) {
+                        dh = -999.9f;
+                    } else if (dh > 999.9) {
+                        dh = 999.9f;
+                    }
+                    deviceLines.append(String.format(" %6.1f", dh));
                     //deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     //deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                     // deltaKu is just a plain span
                     //start = deviceLines.length();
-                    deviceLines.append(String.format("  %6.1f", dev.getDeltaKu()));
-                    //deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    //deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    float dk = dev.getDeltaKu();
+                    boolean clipped = false;
+                    if (dk < -999.9) {
+                        dk = -999.9f; clipped = true;
+                    } else if (dk > 999.9) {
+                        dk = 999.9f;  clipped = true;
+                    }
+                    deviceLines.append(String.format(" %6.1f", dk));
+                    if (clipped) {
+                        deviceLines.setSpan(new ForegroundColorSpan(0x80ff0000), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        //deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        //deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
 
                     // device name is clickable linked to WHAT?
-                    deviceLines.append(" ");
+                    deviceLines.append("  ");
                     start = deviceLines.length();
                     deviceLines.append(padRight(dev.getDevice(), 12));
                     //deviceLines.setSpan(new URLSpan("http://pims.grc.nasa.gov/plots/sams/121f03/121f03.jpg"), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);

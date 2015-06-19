@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -78,7 +79,7 @@ public class MainActivity extends Activity  {
         wvKuAos = (WebView) findViewById(R.id.kuAosWebView);
         wvKuAos.setWebViewClient(new MyBrowser());
 
-        showToast("Initial async update of both WebViews...", Toast.LENGTH_LONG);
+        showToast("Initial async update from web...", Toast.LENGTH_LONG);
         updateKuClip();
         updateSensorTimes();
 
@@ -284,6 +285,9 @@ public class MainActivity extends Activity  {
                 tvDevices.setText(resultSpannable, TextView.BufferType.SPANNABLE);
 
             }
+
+            Typeface font = Typeface.createFromAsset(getAssets(), "fonts/UbuntuMono-R.ttf");
+            tvDevices.setTypeface(font);
 
             // close progresses dialog
             dialog.dismiss();
