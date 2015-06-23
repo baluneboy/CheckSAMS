@@ -12,6 +12,8 @@
 
     <!-- settings menu title -->
     <string name="action_settings">Settings</string>
+    <string name="action_settings1">ONE</string>
+    <string name="action_settings2">TWO</string>
 
     <!-- The "color" attribute is an alias for "fgcolor" and was introduced in API level 18.  -->
     <string name="styled_12_hour_clock"><b>\'GMT\' </b><font face="sans-serif-bold">yyyy-MM-dd, DOY / <b>HH:mm:ss</b></font></string>

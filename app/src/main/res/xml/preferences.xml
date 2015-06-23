@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory
+        android:summary="Period and check count information"
+        android:title="Timing settings" >
+        <EditTextPreference
+            android:key="period"
+            android:summary="Check period (minutes)"
+            android:numeric="integer"
+            android:defaultValue="55"
+            android:title="Period" />
+        <EditTextPreference
+            android:key="numChecks"
+            android:summary="Number of per-minute checks (5, 4, or 3)"
+            android:numeric="integer"
+            android:defaultValue="44"
+            android:title="NumChecks" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:summary="Alarm information"
+        android:title="Alarm settings" >
+        <CheckBoxPreference
+            android:key="alarmOnCheckBox"
+            android:summary="On/Off"
+            android:defaultValue="true"
+            android:title="Play alarm sound" />
+        <ListPreference
+            android:entries="@array/alarmRepeatListOptions"
+            android:entryValues="@array/alarmRepeatListValues"
+            android:key="alarmRepeatListPref"
+            android:summary="play alarm 3x"
+            android:defaultValue="play alarm 3x"
+            android:title="Alarm repeat count" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

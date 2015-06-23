@@ -3,12 +3,15 @@ package com.example.ken.checksams;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -65,6 +68,8 @@ public class MainActivity extends Activity  {
     private TextView tvResult;
     private TextView tvDevices;
 
+    TextView tvPrefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,12 +107,18 @@ public class MainActivity extends Activity  {
             }
         });
 
+        // FIXME set default pref values in MainActivity does not work
+        // set default preference values
+        //PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+
         // make our ClickableSpans and URLSpans work
         tvResult.setMovementMethod(LinkMovementMethod.getInstance());
 
         // shove our styled text into the TextView
         //tvResult.setText(getSampleClunky(), TextView.BufferType.SPANNABLE);
         tvResult.setText(getSampleSpannable(), TextView.BufferType.SPANNABLE);
+
+        tvPrefs = (TextView) findViewById(R.id.txtPrefs);
 
     }
 
@@ -207,17 +218,46 @@ public class MainActivity extends Activity  {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // do whatever
+                showToast("Settings action toast message.", Toast.LENGTH_LONG);
+                Intent intent = new Intent(MainActivity.this, MyPreferenceActivity.class);
+                startActivity(intent);
+                return true;
+            case R.id.menu_action1:
+                // do whatever
+                showToast("Action 1 toast message.", Toast.LENGTH_LONG);
+                displaySharedPreferences();
+                return true;
+            case R.id.menu_action2:
+                // do whatever
+                showToast("Action 2 toast message.", Toast.LENGTH_LONG);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
+    }
+
+    // TODO the prefs screen itself should should show subtitles with current value
+    // TODO make this method obsolete when prefs screen's subtitles show current value
+    private void displaySharedPreferences() {
+        // get shared prefs
+        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
+        String period = prefs.getString("period", "Default NickName");
+        String nchk = prefs.getString("numChecks", "Default NumChecks");
+        boolean alarmOnCheckBox = prefs.getBoolean("alarmOnCheckBox", false);
+        String listPrefs = prefs.getString("alarmRepeatListPref", "Default list prefs");
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("Period (min): " + period + "\n");
+        builder.append("Number of checks: " + nchk + "\n");
+        builder.append("Alarm sound on: " + String.valueOf(alarmOnCheckBox) + "\n");
+        builder.append("Alarm repeat count: " + listPrefs);
+
+        tvPrefs.setText(builder.toString());
     }
 
     private class GetStringFromUrl extends AsyncTask<String, Void, String> {

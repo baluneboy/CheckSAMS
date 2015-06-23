@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="alarmRepeatListOptions">
+        <item>Play alarm 5 times</item>
+        <item>Play alarm 4 times</item>
+        <item>Play alarm 3 times</item>
+    </string-array>
+
+    <string-array name="alarmRepeatListValues">
+        <item>play alarm 5x</item>
+        <item>play alarm 4x</item>
+        <item>play alarm 3x</item>
+    </string-array>
+
+</resources>

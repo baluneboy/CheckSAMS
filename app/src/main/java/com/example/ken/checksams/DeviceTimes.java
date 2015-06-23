@@ -2,9 +2,11 @@ package com.example.ken.checksams;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
@@ -16,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +32,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.example.ken.checksams.Tuples.Tuple3;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 //import com.example.ken.checksams.Tuples.Tuple4;
 
 
@@ -48,7 +57,8 @@ public class DeviceTimes {
     // constants
     private static final String pattern = "(\\d{4}:\\d+:\\d{2}:\\d{2}:\\d{2})\\s(.*)\\s(.*)";
     private static final Pattern rx = Pattern.compile(pattern);
-    private static final SimpleDateFormat YYYYDDD = new SimpleDateFormat("yyyy:DDD:");
+    //private static final SimpleDateFormat YYYYDDD = new SimpleDateFormat("yyyy:DDD:");
+    private static final SimpleDateFormat DOY = new SimpleDateFormat("DDD:");
     private static final SimpleDateFormat HHMMSS = new SimpleDateFormat("HH:mm:ss");
 
     /**********************************************************
@@ -167,9 +177,63 @@ public class DeviceTimes {
         return String.format("%1$" + n + "s", s);
     }
 
+    private static void demoJsoup(String url) {
+
+        // Create an array
+        ArrayList arraylist = new ArrayList<HashMap<String, String>>();
+
+        try {
+            // Connect to the Website URL
+            Document doc = Jsoup.connect(url).get();
+            ArrayList<String> downServers = new ArrayList<>();
+
+            // Identify Table Class "worldpopulation"
+            Element table = doc.select("table").get(0); //select the first table.
+            Elements rows = table.select("tr");
+
+            for (int i = 1; i < rows.size(); i++) { //first row is the col names so skip it.
+                Element row = rows.get(i);
+                Elements cols = row.select("td");
+
+                if (cols.get(2).text().equals("Titan")) {
+/*                    if (cols.get(7).text().equals("down"))
+                        downServers.add(cols.get(5).text());
+
+                    do {
+                        if(i < rows.size() - 1)
+                            i++;
+                        row = rows.get(i);
+                        cols = row.select("td");
+                        if (cols.get(7).text().equals("down") && cols.get(3).text().equals("")) {
+                            downServers.add(cols.get(5).text());
+                        }
+                        if(i == rows.size() - 1)
+                            break;
+                    }
+                    while (cols.get(3).text().equals(""));
+                    i--; //if there is two Titan names consecutively.*/
+                    System.out.println("you should not have got here");
+                }
+                else {
+                    System.out.println(cols.get(1).text() + " " + cols.get(2).text());
+                }
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
     public static void main( String args[] ) throws Exception {
 
-        // Get device times mapping from result text (string)
+        // URL Address
+        String url = "http://pims.grc.nasa.gov/plots/MAMS/active_sensors.html";
+
+        // Parse HTML table
+        demoJsoup(url);
+
+/*        // Get device times mapping from result text (string)
         String result = "2015-06-17 butters host\n--------------------------------------\nbegin\n2015:168:20:09:00 butters HOST\n2015:168:20:09:15 Ku_AOS GSE\n2015:168:20:09:15 122-f02 EE\n2015:168:20:09:16 122-f03 EE";
         TreeMap<String,DeviceTimes> sorted_map = getSortedMap(result);
 
@@ -189,7 +253,7 @@ public class DeviceTimes {
         System.out.println(padLeft("Howto", 20) + "*");
         System.out.println(String.format("%6.1f", -999.89f));
         System.out.println(String.format("%6.1f", 999.89f));
-        System.out.println(String.format("%6.1f", 1.23f));
+        System.out.println(String.format("%6.1f", 1.23f));*/
 
     }
 
@@ -287,6 +351,13 @@ public class DeviceTimes {
         // now we have sorted map, so iterate to build sorted, formatted spannables
         SpannableStringBuilder deviceLines = new SpannableStringBuilder();
         try {
+
+            // header line
+            deviceLines.append("DOY:hh:mm:ss     dH     dK  device\n");
+            deviceLines.append("----------------------------------\n");
+            deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+
             for (TreeMap.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
                 DeviceTimes dev = entry.getValue();
                 Date t = dev.getTime();
@@ -298,12 +369,13 @@ public class DeviceTimes {
                 // the next line shows how to repeat char "-" 80 times
                 //    Log.i("SEP", new String(new char[80]).replace("\0", "-"));
 
+
                 // if host, then make this a distinctive line in the sand
                 if (dev.getDevice().equals("host")) {
 
                     start = deviceLines.length();
 
-                    deviceLines.append(YYYYDDD.format(t));
+                    deviceLines.append(DOY.format(t));
                     deviceLines.append(HHMMSS.format(t));
                     deviceLines.append(String.format(" %6.1f", dev.getDeltaHost()));
                     deviceLines.append(String.format(" %6.1f", dev.getDeltaKu()));
@@ -314,8 +386,8 @@ public class DeviceTimes {
                 }
                 else {
 
-                    // device time YYYY:DDD: is plain
-                    deviceLines.append(YYYYDDD.format(t));
+                    // device time DOY: is plain
+                    deviceLines.append(DOY.format(t));
 
                     // device time HH:MM:SS is orange
                     start = deviceLines.length();
