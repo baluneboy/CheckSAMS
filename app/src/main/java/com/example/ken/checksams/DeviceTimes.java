@@ -177,46 +177,36 @@ public class DeviceTimes {
         return String.format("%1$" + n + "s", s);
     }
 
-    private static void demoJsoup(String url) {
+    private static void demoJsoup(String url, int tabnum, Boolean header) {
 
         // Create an array
+        int start = 0;
         ArrayList arraylist = new ArrayList<HashMap<String, String>>();
-
         try {
             // Connect to the Website URL
             Document doc = Jsoup.connect(url).get();
             ArrayList<String> downServers = new ArrayList<>();
 
             // Identify Table Class "worldpopulation"
-            Element table = doc.select("table").get(0); //select the first table.
+            Element table = doc.select("table").get(tabnum); // zero selects first table
             Elements rows = table.select("tr");
 
-            for (int i = 1; i < rows.size(); i++) { //first row is the col names so skip it.
+            System.out.print("Table(" + tabnum + ") has " + rows.size() + " rows");
+            if (header) {
+                start = 1;
+                System.out.println(" (including header row).");
+            }
+            else {
+                System.out.println(" (no header row).");
+            }
+            for (int i = start; i < rows.size(); i++) { //first row is the col names so skip it.
                 Element row = rows.get(i);
                 Elements cols = row.select("td");
 
-                if (cols.get(2).text().equals("Titan")) {
-/*                    if (cols.get(7).text().equals("down"))
-                        downServers.add(cols.get(5).text());
-
-                    do {
-                        if(i < rows.size() - 1)
-                            i++;
-                        row = rows.get(i);
-                        cols = row.select("td");
-                        if (cols.get(7).text().equals("down") && cols.get(3).text().equals("")) {
-                            downServers.add(cols.get(5).text());
-                        }
-                        if(i == rows.size() - 1)
-                            break;
-                    }
-                    while (cols.get(3).text().equals(""));
-                    i--; //if there is two Titan names consecutively.*/
-                    System.out.println("you should not have got here");
-                }
-                else {
-                    System.out.println(cols.get(1).text() + " " + cols.get(2).text());
-                }
+/*                if (cols.get(2).text().equals("HOST")) {
+                    System.out.println("AT HOST ROW NOW");
+                }*/
+                System.out.println(cols.get(0).text() + " " + cols.get(1).text() + " " + cols.get(2).text());
             }
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -228,10 +218,12 @@ public class DeviceTimes {
     public static void main( String args[] ) throws Exception {
 
         // URL Address
-        String url = "http://pims.grc.nasa.gov/plots/MAMS/active_sensors.html";
+        //String url = "http://pims.grc.nasa.gov/plots/MAMS/active_sensors.html";
+        String url = "http://pims.grc.nasa.gov/plots/user/sams/status/sensortimes.html";
 
         // Parse HTML table
-        demoJsoup(url);
+        demoJsoup(url, 0, Boolean.TRUE);
+        demoJsoup(url, 1, Boolean.FALSE);
 
 /*        // Get device times mapping from result text (string)
         String result = "2015-06-17 butters host\n--------------------------------------\nbegin\n2015:168:20:09:00 butters HOST\n2015:168:20:09:15 Ku_AOS GSE\n2015:168:20:09:15 122-f02 EE\n2015:168:20:09:16 122-f03 EE";

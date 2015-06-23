@@ -62,8 +62,6 @@ import com.example.ken.checksams.DeviceTimes;
 
 public class MainActivity extends Activity  {
 
-    Button bUpdate;
-    Button bDetails;
     private WebView wvKuAos;
     private TextView tvResult;
     private TextView tvDevices;
@@ -78,34 +76,12 @@ public class MainActivity extends Activity  {
         tvResult = (TextView) findViewById(R.id.resultRichTextView);
         tvDevices = (TextView) findViewById(R.id.devicesRichTextView);
 
-        bUpdate = (Button) findViewById(R.id.updateButton);
-        bDetails = (Button) findViewById(R.id.detailsButton);
-
         wvKuAos = (WebView) findViewById(R.id.kuAosWebView);
         wvKuAos.setWebViewClient(new MyBrowser());
 
         showToast("Initial async update from web...", Toast.LENGTH_LONG);
         updateKuClip();
         updateSensorTimes();
-
-        bUpdate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                updateKuClip();
-                updateSensorTimes();
-            }
-        });
-
-        bDetails.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Spanned tmp = Html.fromHtml("&cent;");
-                String cent = tmp.toString();
-                showToast("Time for a wise crack...");
-                tvResult.setText(format("Insert 25%s for details!", cent));
-                tvResult.setTextColor(Color.RED);
-            }
-        });
 
         // FIXME set default pref values in MainActivity does not work
         // set default preference values
@@ -154,7 +130,8 @@ public class MainActivity extends Activity  {
         tvResult.setTextColor(Color.BLACK);
     }
 
-    private void updateKuClip() {
+
+    private void updateKuClipURLfromFile() {
         //Get the text file
         File sdcard = Environment.getExternalStorageDirectory();
         File file = new File(sdcard, "Documents/getweb.txt");
@@ -178,11 +155,16 @@ public class MainActivity extends Activity  {
 
         }
 
-        Log.w("HERE IS text:", text.toString());
+        Log.w("HERE IS FILE TEXT:", text.toString());
         String url = text.toString();
 
         wvKuAos.loadUrl(url);
 
+    }
+
+    private void updateKuClip() {
+        String url = "http://pims.grc.nasa.gov/plots/user/sams/status/sensortimes.html";
+        wvKuAos.loadUrl(url);
     }
 
     private void showToast(String s, int duration) {
@@ -219,21 +201,25 @@ public class MainActivity extends Activity  {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+
+            // Settings via MyPreferenceActivity
             case R.id.action_settings:
-                // do whatever
-                showToast("Settings action toast message.", Toast.LENGTH_LONG);
                 Intent intent = new Intent(MainActivity.this, MyPreferenceActivity.class);
                 startActivity(intent);
                 return true;
+
+            // Refresh from web
             case R.id.menu_action1:
-                // do whatever
-                showToast("Action 1 toast message.", Toast.LENGTH_LONG);
+                //showToast("Refresh not implemented yet :(", Toast.LENGTH_SHORT);
+                updateKuClip();
+                updateSensorTimes();
+                return true;
+
+            // Show prefs
+            case R.id.menu_action2:
                 displaySharedPreferences();
                 return true;
-            case R.id.menu_action2:
-                // do whatever
-                showToast("Action 2 toast message.", Toast.LENGTH_LONG);
-                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
