@@ -13,4 +13,16 @@
         <item>play alarm 3x</item>
     </string-array>
 
+    <string-array name="devices">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="device_names">
+        <item>es03rt</item>
+        <item>es05rt</item>
+        <item>es06rt</item>
+    </string-array>
+
 </resources>

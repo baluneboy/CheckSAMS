@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">CheckSAMS</string>
-    <string name="deviceTimesString">SAMS Sensor Times</string>
-    <string name="resultString">This is the money line.</string>
+    <string name="device_time_str">SAMS Sensor Times</string>
+    <string name="result_str">This is the money line.</string>
 
     <!-- not sure where this is used -->
     <string name="greeting">Hello There, Ken!</string>
@@ -11,14 +11,20 @@
     <string name="action_settings1">Refresh</string>
     <string name="action_settings2">Show</string>
 
+    <!-- FIXME why does D or DDD not give DOY? -->
     <!-- The "color" attribute is an alias for "fgcolor" and was introduced in API level 18.  -->
-    <string name="styled_12_hour_clock"><b>\'GMT\' </b><font face="sans-serif-bold">yyyy-MM-dd, DOY / <b>HH:mm:ss</b></font></string>
-    <string name="styled_24_hour_clock"><b>\'GMT\' </b><font face="sans-serif-bold">yyyy-MM-dd, DOY / <b>HH:mm:ss</b></font></string>
+    <string name="styled_12_hour_clock"><b>\'GMT\' </b><font face="sans-serif-bold"><font size="18">yyyy-MM-dd</font> / <b>HH:mm:ss</b></font></string>
+    <string name="styled_24_hour_clock"><b>\'GMT\' </b><font face="sans-serif-bold"><font size="18">yyyy-MM-dd</font> / <b>HH:mm:ss</b></font></string>
 
     <string name="styled_12_hour_clock2">MM/<font color="red"><b>dd</b></font>/yy h<font color="#ffff0000"><sup><small>mm</small></sup></font><b>aa</b></string>
     <string name="styled_24_hour_clock2">MM/<font color="red"><b>dd</b></font>/yy k<font color="#ffff0000"><sup><small>mm</small></sup></font></string>
 
     <string name="styled_12_hour_clock3">\'Custom font:\' <font color="@android:color/primary_text_holo_dark" face="sans-serif-thin">MM/dd/yy h:mm aa</font></string>
     <string name="styled_24_hour_clock3">\'Custom font:\' <font color="@android:color/primary_text_holo_dark" face="sans-serif-thin">MM/dd/yy k:mm</font></string>
+
+    <string name="ignore_devices">Ignore These Devices</string>
+
+    <string name="title_screen_preference">Title Screen Ignore Devices</string>
+    <string name="summary_screen_preference">Summary Screen Ignore These Devices</string>
 
 </resources>

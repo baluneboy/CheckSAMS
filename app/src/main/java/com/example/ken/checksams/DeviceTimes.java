@@ -1,7 +1,11 @@
 package com.example.ken.checksams;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -336,7 +340,7 @@ public class DeviceTimes {
         
     }
 
-    public static SpannableString getSpannableFromMap(TreeMap<String, DeviceTimes> sorted_map) {
+    public static SpannableString getSpannableFromMap(TreeMap<String, DeviceTimes> sorted_map, List<String> ignore_devices) {
 
         int start;
 
@@ -345,14 +349,16 @@ public class DeviceTimes {
         try {
 
             // header line
-            deviceLines.append("DOY:hh:mm:ss     dH     dK  device\n");
+            deviceLines.append("DOY:hh:mm:ss  dHost    dKu  device\n");
             deviceLines.append("----------------------------------\n");
             deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-
             for (TreeMap.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
                 DeviceTimes dev = entry.getValue();
-                Date t = dev.getTime();
+                String device_name = dev.getDevice();
+                Date device_time = dev.getTime();
+                float device_dh = dev.getDeltaHost();
+                float device_dk = dev.getDeltaKu();
 
                 // FIXME when we are get to host entry, entire lines background gets distinct color
                 // FIXME user config for dimmed devices
@@ -362,33 +368,46 @@ public class DeviceTimes {
                 //    Log.i("SEP", new String(new char[80]).replace("\0", "-"));
 
 
-                // if host, then make this a distinctive line in the sand
-                if (dev.getDevice().equals("host")) {
+                // if host, then make this a distinctive line via bg color
+                if (device_name.equals("host")) {
 
                     start = deviceLines.length();
 
-                    deviceLines.append(DOY.format(t));
-                    deviceLines.append(HHMMSS.format(t));
-                    deviceLines.append(String.format(" %6.1f", dev.getDeltaHost()));
-                    deviceLines.append(String.format(" %6.1f", dev.getDeltaKu()));
-                    deviceLines.append("  " + dev.getDevice() + "      ");
-                    deviceLines.setSpan(new ForegroundColorSpan(Color.WHITE), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    deviceLines.setSpan(new BackgroundColorSpan(Color.BLACK), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    deviceLines.append(DOY.format(device_time));
+                    deviceLines.append(HHMMSS.format(device_time));
+                    deviceLines.append(String.format(" %6.1f", device_dh));
+                    deviceLines.append(String.format(" %6.1f", device_dk));
+                    deviceLines.append("  " + device_name + "      ");
+                    deviceLines.setSpan(new ForegroundColorSpan(Color.BLACK), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    deviceLines.setSpan(new BackgroundColorSpan(Color.WHITE), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                }
+                else if (ignore_devices.contains(device_name)) {
+
+                    start = deviceLines.length();
+
+                    deviceLines.append(DOY.format(device_time));
+                    deviceLines.append(HHMMSS.format(device_time));
+                    deviceLines.append("       ");
+                    deviceLines.append("       ");
+                    deviceLines.append("  " + device_name + "      ");
+                    deviceLines.setSpan(new ForegroundColorSpan(Color.DKGRAY), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    //deviceLines.setSpan(new BackgroundColorSpan(Color.BLACK), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                 }
                 else {
 
                     // device time DOY: is plain
-                    deviceLines.append(DOY.format(t));
+                    deviceLines.append(DOY.format(device_time));
 
                     // device time HH:MM:SS is orange
                     start = deviceLines.length();
-                    deviceLines.append(HHMMSS.format(t));
+                    deviceLines.append(HHMMSS.format(device_time));
                     deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-                    // deltaHost is just a plain span
+                    // deltaHost span
                     //start = deviceLines.length();
-                    float dh = dev.getDeltaHost();
+                    float dh = device_dh;
                     if (dh < -999.9) {
                         dh = -999.9f;
                     } else if (dh > 999.9) {
@@ -398,9 +417,9 @@ public class DeviceTimes {
                     //deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     //deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-                    // deltaKu is just a plain span
+                    // deltaKu span
                     //start = deviceLines.length();
-                    float dk = dev.getDeltaKu();
+                    float dk = device_dk;
                     boolean clipped = false;
                     if (dk < -999.9) {
                         dk = -999.9f; clipped = true;
@@ -409,7 +428,8 @@ public class DeviceTimes {
                     }
                     deviceLines.append(String.format(" %6.1f", dk));
                     if (clipped) {
-                        deviceLines.setSpan(new ForegroundColorSpan(0x80ff0000), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        //deviceLines.setSpan(new ForegroundColorSpan(0x80ff0000), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        deviceLines.setSpan(new ForegroundColorSpan(Color.RED), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         //deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         //deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     }
@@ -417,7 +437,7 @@ public class DeviceTimes {
                     // device name is clickable linked to WHAT?
                     deviceLines.append("  ");
                     start = deviceLines.length();
-                    deviceLines.append(padRight(dev.getDevice(), 12));
+                    deviceLines.append(padRight(device_name, 12));
                     //deviceLines.setSpan(new URLSpan("http://pims.grc.nasa.gov/plots/sams/121f03/121f03.jpg"), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                 }

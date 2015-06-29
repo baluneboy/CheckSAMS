@@ -17,17 +17,17 @@ public class MySortedMap {
         TreeMap<String,DeviceTimes> sorted_map = new TreeMap<String,DeviceTimes>(bvc);        
 
         String line1 = "2015:159:21:22:03 es05rt CIR";
-        DeviceTimes dt1 = new DeviceTimes(line1);        
+        //DeviceTimes dt1 = new DeviceTimes(line1, context);
 
         String line2 = "2015:159:21:22:00 es06rt DIR";
-        DeviceTimes dt2 = new DeviceTimes(line2); 
+        //DeviceTimes dt2 = new DeviceTimes(line2, context);
         
         String line3 = "2015:159:21:22:09 es07rt WIR";
-        DeviceTimes dt3 = new DeviceTimes(line3); 
+        //DeviceTimes dt3 = new DeviceTimes(line3, context);
         
-        map.put("es05rt", dt1);
-        map.put("es06rt", dt2);
-        map.put("es07rt", dt3);       
+        //map.put("es05rt", dt1);
+        //map.put("es06rt", dt2);
+        //map.put("es07rt", dt3);
         
     	// Iterate to display unsorted mapped values
         System.out.println("UNSORTED:");

@@ -24,25 +24,19 @@
 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/resultString"
+        android:text="@string/result_str"
         android:layout_below="@+id/textClock"
 
         android:textColor="#ff0000ff"
         android:textSize="16sp" />
 
-    <WebView
-        android:id="@+id/kuAosWebView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/resultRichTextView" />
-    
     <TextView
         android:id="@+id/devicesRichTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="butters"
         android:textSize="16sp"
-        android:layout_below="@+id/kuAosWebView"
+        android:layout_below="@+id/resultRichTextView"
         android:layout_alignParentStart="true"
         android:layout_marginTop="8dp" />
 
@@ -55,5 +49,12 @@
         android:layout_below="@+id/devicesRichTextView"
         android:layout_alignParentStart="true"
         android:layout_marginTop="4dp" />
+
+    <WebView
+        android:id="@+id/kuAosWebView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtPrefs"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

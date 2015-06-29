@@ -26,12 +26,29 @@
             android:defaultValue="true"
             android:title="Play alarm sound" />
         <ListPreference
+            android:key="alarmRepeatListPref"
             android:entries="@array/alarmRepeatListOptions"
             android:entryValues="@array/alarmRepeatListValues"
-            android:key="alarmRepeatListPref"
             android:summary="play alarm 3x"
             android:defaultValue="play alarm 3x"
             android:title="Alarm repeat count" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:summary="Device information"
+        android:title="Device Settings" >
+        <CheckBoxPreference
+            android:key="es03rtCheckBox"
+            android:defaultValue="false"
+            android:title="es03rt" />
+        <CheckBoxPreference
+            android:key="es05rtCheckBox"
+            android:defaultValue="false"
+            android:title="es05rt" />
+        <CheckBoxPreference
+            android:key="es06rtCheckBox"
+            android:defaultValue="false"
+            android:title="es06rt" />
     </PreferenceCategory>
 
 </PreferenceScreen>
