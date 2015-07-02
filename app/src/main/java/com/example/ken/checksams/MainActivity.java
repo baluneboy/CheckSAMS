@@ -8,6 +8,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -66,11 +69,15 @@ import com.example.ken.checksams.DeviceTimes;
 
 public class MainActivity extends Activity  {
 
-    private WebView wvKuAos;
-    private TextView tvResult;
-    private TextView tvDevices;
+    private WebView  mWebViewKu;
+    private TextView mTextViewResult;
+    private TextView mTextViewDevices;
 
     TextView tvPrefs;
+    //private Uri mChosenRingtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+    private Uri mChosenRingtoneUri = Uri.parse("android.resource://com.example.ken.checksams/" + R.raw.quindar_push_rel_zing_mp3);
+    private final int REQUESTCODE_PICK_RINGTONE = 5;
+    private final int REQUESTCODE_PICK_AUDIO = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,10 +85,10 @@ public class MainActivity extends Activity  {
         setContentView(R.layout.activity_main);
 
         TextClock tcClock = (TextClock) findViewById(R.id.textClock);
-        tvResult = (TextView) findViewById(R.id.resultRichTextView);
-        tvDevices = (TextView) findViewById(R.id.devicesRichTextView);
+        mTextViewResult = (TextView) findViewById(R.id.resultRichTextView);
+        mTextViewDevices = (TextView) findViewById(R.id.devicesRichTextView);
 
-        wvKuAos = (WebView) findViewById(R.id.kuAosWebView);
+        mWebViewKu = (WebView) findViewById(R.id.kuAosWebView);
 
         tcClock.setFormat24Hour("H:mm");
 
@@ -94,11 +101,11 @@ public class MainActivity extends Activity  {
         //PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         // make our ClickableSpans and URLSpans work
-        tvResult.setMovementMethod(LinkMovementMethod.getInstance());
+        mTextViewResult.setMovementMethod(LinkMovementMethod.getInstance());
 
         // pump our styled text into the TextView
-        //tvResult.setText(getSampleClunky(), TextView.BufferType.SPANNABLE);
-        tvResult.setText(getSampleSpannable(), TextView.BufferType.SPANNABLE);
+        //mTextViewResult.setText(getSampleClunky(), TextView.BufferType.SPANNABLE);
+        mTextViewResult.setText(getSampleSpannable(), TextView.BufferType.SPANNABLE);
 
         tvPrefs = (TextView) findViewById(R.id.txtPrefs);
 
@@ -133,8 +140,8 @@ public class MainActivity extends Activity  {
     private void updateSensorTimes() {
         String url2 = "http://pims.grc.nasa.gov/plots/user/sams/status/sensortimes.txt";
         new GetStringFromUrl().execute(url2);
-        tvResult.setText("The bottom line might change here.");
-        tvResult.setTextColor(Color.YELLOW);
+        mTextViewResult.setText("The bottom line might change here.");
+        mTextViewResult.setTextColor(Color.YELLOW);
     }
 
     private void updateKuClipURLfromFile() {
@@ -164,13 +171,13 @@ public class MainActivity extends Activity  {
         Log.w("HERE IS FILE TEXT:", text.toString());
         String url = text.toString();
 
-        wvKuAos.loadUrl(url);
+        mWebViewKu.loadUrl(url);
 
     }
 
     private void updateKuClip() {
         String url = "http://pims.grc.nasa.gov/plots/user/sams/status/sensortimes.html";
-        wvKuAos.loadUrl(url);
+        mWebViewKu.loadUrl(url);
     }
 
     private void showToast(String s, int duration) {
@@ -212,6 +219,7 @@ public class MainActivity extends Activity  {
             case R.id.action_settings:
                 Intent intent = new Intent(MainActivity.this, MyPreferenceActivity.class);
                 startActivity(intent);
+                displaySharedPreferences();
                 return true;
 
             // Refresh from web
@@ -224,11 +232,77 @@ public class MainActivity extends Activity  {
             // Show prefs
             case R.id.menu_action2:
                 displaySharedPreferences();
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                boolean alarmOnCheckBox = prefs.getBoolean("alarmOnCheckBox", false);
+                if (alarmOnCheckBox) {
+                    String listPrefs = prefs.getString("alarmRepeatListPref", "Default list prefs");
+                    int count = Integer.parseInt(listPrefs);
+                    loopNotifySound(count);
+                }
+                return true;
+
+            // SD Card prefs
+            case R.id.menu_action3:
+                Log.i("Kenfo", "SD Card select...");
+                pickFile();
+                return true;
+
+            // Ringtone prefs
+            case R.id.menu_action4:
+                Log.i("Kenfo", "Ringtone select...");
+                pickRingtone();
                 return true;
 
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void pickRingtone() {
+        Intent ringtoneIntent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+        ringtoneIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
+        ringtoneIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Select Tone");
+        ringtoneIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, (Uri) null);
+        this.startActivityForResult(ringtoneIntent, this.REQUESTCODE_PICK_RINGTONE);
+    }
+
+    private void pickFile() {
+        Intent mediaIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        mediaIntent.setType("audio/*"); //set mime type as per requirement
+        this.startActivityForResult(mediaIntent, this.REQUESTCODE_PICK_AUDIO);
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
+        if (resultCode == Activity.RESULT_OK && requestCode == this.REQUESTCODE_PICK_RINGTONE) {
+            Uri uri = intent.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+            if (uri != null) { this.mChosenRingtoneUri = uri; }
+        }
+        if (resultCode == Activity.RESULT_OK && requestCode == this.REQUESTCODE_PICK_AUDIO) {
+            Uri uri = intent.getData();
+            if (uri != null) { this.mChosenRingtoneUri = uri; }
+        }
+    }
+
+    public void loopNotifySound(int repeat) {
+        final MediaPlayer mp = MediaPlayer.create(getApplicationContext(), this.mChosenRingtoneUri);
+        final int count = repeat - 1;
+        new Thread(new Runnable() {
+            public void run() {
+                mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    int n = 0;
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        if (n < count) {
+                            mp.start();
+                            n++;
+                        }
+                    }
+                });
+                mp.start();
+            }
+        }).start();
+        //Log.i("Kenfo", "done playing " + mChosenRingtoneUri.toString());
     }
 
     // TODO make prefs screen itself show ALL current values (in subtitles or via checks)
@@ -313,7 +387,7 @@ public class MainActivity extends Activity  {
 
             // show result in textView
             if (result == null) {
-                tvDevices.setText("Error in downloading. Please try again.");
+                mTextViewDevices.setText("Error in downloading. Please try again.");
             } else {
 
                 // at this point, result is big string with newline characters
@@ -333,15 +407,15 @@ public class MainActivity extends Activity  {
                 SpannableString resultSpannable = DeviceTimes.getSpannableFromMap(sorted_map, ignore_devices);
 
                 // make our ClickableSpans and URLSpans work
-                tvDevices.setMovementMethod(LinkMovementMethod.getInstance());
+                mTextViewDevices.setMovementMethod(LinkMovementMethod.getInstance());
 
                 // populate textview with device times info in spannable form
-                tvDevices.setText(resultSpannable, TextView.BufferType.SPANNABLE);
+                mTextViewDevices.setText(resultSpannable, TextView.BufferType.SPANNABLE);
 
             }
 
             Typeface font = Typeface.createFromAsset(getAssets(), "fonts/UbuntuMono-R.ttf");
-            tvDevices.setTypeface(font);
+            mTextViewDevices.setTypeface(font);
 
             // close progresses dialog
             dialog.dismiss();

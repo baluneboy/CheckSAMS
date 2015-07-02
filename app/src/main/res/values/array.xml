@@ -8,9 +8,9 @@
     </string-array>
 
     <string-array name="alarmRepeatListValues">
-        <item>play alarm 5x</item>
-        <item>play alarm 4x</item>
-        <item>play alarm 3x</item>
+        <item>5</item>
+        <item>4</item>
+        <item>3</item>
     </string-array>
 
     <string-array name="devices">

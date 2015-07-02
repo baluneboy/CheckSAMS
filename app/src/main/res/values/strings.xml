@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">CheckSAMS</string>
     <string name="device_time_str">SAMS Sensor Times</string>
-    <string name="result_str">This is the money line.</string>
+    <string name="result_str">This is the status line.</string>
 
     <!-- not sure where this is used -->
     <string name="greeting">Hello There, Ken!</string>
@@ -10,6 +10,8 @@
     <string name="action_settings">Settings</string>
     <string name="action_settings1">Refresh</string>
     <string name="action_settings2">Show</string>
+    <string name="action_settings3">SD Card</string>
+    <string name="action_settings4">Ringtone</string>
 
     <!-- FIXME why does D or DDD not give DOY? -->
     <!-- The "color" attribute is an alias for "fgcolor" and was introduced in API level 18.  -->

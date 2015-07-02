@@ -1,5 +1,7 @@
 package com.example.ken.checksams;
 
+import android.app.Fragment;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -46,15 +48,14 @@ public class MyPreferenceActivity extends PreferenceActivity {
                 boolean alarmOnCheckBox = sharedPreferences.getBoolean("alarmOnCheckBox", false);
                 String tf = String.valueOf(alarmOnCheckBox);
                 alarmOnPref.setSummary(tf);
-
             }
+
         }
 
         @Override
         public void onResume() {
             super.onResume();
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-
         }
 
         @Override

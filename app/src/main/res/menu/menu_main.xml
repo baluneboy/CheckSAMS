@@ -4,4 +4,6 @@
         android:orderInCategory="100" android:showAsAction="never" />
     <item android:id="@+id/menu_action1" android:title="@string/action_settings1"/>
     <item android:id="@+id/menu_action2" android:title="@string/action_settings2"/>
+    <item android:id="@+id/menu_action3" android:title="@string/action_settings3"/>
+    <item android:id="@+id/menu_action4" android:title="@string/action_settings4"/>
 </menu>
