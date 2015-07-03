@@ -218,13 +218,15 @@ public class MainActivity extends Activity  {
         switch (item.getItemId()) {
 
             // Settings via MyPreferenceActivity
+            // --------
             case R.id.action_settings:
                 Intent intent = new Intent(MainActivity.this, MyPreferenceActivity.class);
                 startActivity(intent);
                 displaySharedPreferences();
                 return true;
 
-            // Refresh from web
+            // Refresh
+            // -------
             case R.id.menu_action1:
                 updateSensorTimesHtmlWebView();
                 updateSensorTimesTextView();
@@ -233,29 +235,20 @@ public class MainActivity extends Activity  {
                 return true;
 
             // Show prefs
+            // ----
             case R.id.menu_action2:
-
-                // firstly, display prefs
                 displaySharedPreferences();
-
-                // secondly, if alarm is on, then loop the notify sound preferred number of times
-/*                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                boolean alarmOnCheckBox = prefs.getBoolean("alarmOnCheckBox", false);
-                if (alarmOnCheckBox) {
-                    String listPrefs = prefs.getString("alarmRepeatListPref", "Default list prefs");
-                    int count = Integer.parseInt(listPrefs);
-                    loopNotifySound(count);
-                }*/
-                soundTheAlarm();
                 return true;
 
             // SD Card prefs
+            // -------
             case R.id.menu_action3:
                 Log.i("Kenfo", "SD Card select...");
                 pickFile();
                 return true;
 
             // Ringtone prefs
+            // --------
             case R.id.menu_action4:
                 Log.i("Kenfo", "Ringtone select...");
                 pickRingtone();
