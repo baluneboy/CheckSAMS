@@ -6,24 +6,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.example.ken.checksams.DeviceTimes;
+import com.example.ken.checksams.DeviceDeltas;
 
 public class MySortedMap {
 
     public static void main(String[] args) {
         
-        HashMap<String,DeviceTimes> map = new HashMap<String,DeviceTimes>();
-        DeviceTimesComparator bvc =  new DeviceTimesComparator(map);
-        TreeMap<String,DeviceTimes> sorted_map = new TreeMap<String,DeviceTimes>(bvc);        
+        HashMap<String,DeviceDeltas> map = new HashMap<String,DeviceDeltas>();
+        DeviceDeltasComparator bvc =  new DeviceDeltasComparator(map);
+        TreeMap<String,DeviceDeltas> sorted_map = new TreeMap<String,DeviceDeltas>(bvc);
 
         String line1 = "2015:159:21:22:03 es05rt CIR";
-        //DeviceTimes dt1 = new DeviceTimes(line1, context);
+        //DeviceDeltas dt1 = new DeviceDeltas(line1, context);
 
         String line2 = "2015:159:21:22:00 es06rt DIR";
-        //DeviceTimes dt2 = new DeviceTimes(line2, context);
+        //DeviceDeltas dt2 = new DeviceDeltas(line2, context);
         
         String line3 = "2015:159:21:22:09 es07rt WIR";
-        //DeviceTimes dt3 = new DeviceTimes(line3, context);
+        //DeviceDeltas dt3 = new DeviceDeltas(line3, context);
         
         //map.put("es05rt", dt1);
         //map.put("es06rt", dt2);
@@ -32,9 +32,9 @@ public class MySortedMap {
     	// Iterate to display unsorted mapped values
         System.out.println("UNSORTED:");
         try {
-            for (Map.Entry<String, DeviceTimes> entry: map.entrySet()) {
+            for (Map.Entry<String, DeviceDeltas> entry: map.entrySet()) {
                 //String key = entry.getKey();
-                DeviceTimes dev = entry.getValue();
+                DeviceDeltas dev = entry.getValue();
                 System.out.println(dev);
             }
         } catch (Exception e) {
@@ -48,9 +48,9 @@ public class MySortedMap {
     	// Iterate to display sorted mapped values
         System.out.println("SORTED BY GMT:");
         try {
-            for (Map.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
+            for (Map.Entry<String, DeviceDeltas> entry: sorted_map.entrySet()) {
                 //String key = entry.getKey();
-                DeviceTimes dev = entry.getValue();
+                DeviceDeltas dev = entry.getValue();
                 System.out.println(dev);
             }
         } catch (Exception e) {
@@ -61,10 +61,10 @@ public class MySortedMap {
     }
 }
 
-class DeviceTimesComparator implements Comparator<String> {
+class DeviceDeltasComparator implements Comparator<String> {
 
-    Map<String, DeviceTimes> base;
-    public DeviceTimesComparator(Map<String, DeviceTimes> base) {
+    Map<String, DeviceDeltas> base;
+    public DeviceDeltasComparator(Map<String, DeviceDeltas> base) {
         this.base = base;
     }
 

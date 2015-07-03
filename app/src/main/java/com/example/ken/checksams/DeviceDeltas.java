@@ -17,6 +17,7 @@ import android.text.style.StyleSpan;
 import android.text.style.TypefaceSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
+import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,17 +49,17 @@ import org.jsoup.select.Elements;
 /**
  * Created by pims on 6/15/15.
  */
-public class DeviceTimes {
+public class DeviceDeltas {
 
     // member variables
-    private Date time;          // device time
-    private String device;      // device like "121f03rt"
-    private String tag;         // device tag like "SE"
-    private Float deltaHost;    // device time minus host time in seconds
-    private Float deltaKu;      // device time minus Ku time in seconds
-    private Boolean found;      // true if pattern found
+    private Date time;              // device time
+    private String device;          // device like "121f03rt"
+    private String tag;             // device tag like "SE"
+    private Float deltaHost;        // device time minus host time in seconds
+    private Float deltaKu;          // device time minus Ku time in seconds
+    private Boolean found;          // true if pattern found
 
-    // constants
+    // class constants
     private static final String pattern = "(\\d{4}:\\d+:\\d{2}:\\d{2}:\\d{2})\\s(.*)\\s(.*)";
     private static final Pattern rx = Pattern.compile(pattern);
     //private static final SimpleDateFormat YYYYDDD = new SimpleDateFormat("yyyy:DDD:");
@@ -67,13 +68,13 @@ public class DeviceTimes {
 
     /**********************************************************
      Method:         Default Constructor
-     Purpose:        Create a new DeviceTimes object and initialize it
+     Purpose:        Create a new DeviceDeltas object and initialize it
                      with invalid deltas
      Parameters:     line string to be parsed like "2015:166:23:18:59 Ku_AOS GSE"
      Preconditions:  None
-     Postconditions: a new DeviceTimes object is created with null deltas
+     Postconditions: a new DeviceDeltas object is created with null deltas
      ***********************************************************/
-    public DeviceTimes(String line) {
+    public DeviceDeltas(String line) {
 
         // Create matcher object
         Matcher m = rx.matcher(line);
@@ -101,7 +102,7 @@ public class DeviceTimes {
 
     /**********************************************************
      Method:         toString
-     Purpose:        Convert the internal representation of DeviceTimes,
+     Purpose:        Convert the internal representation of DeviceDeltas,
                      to a String which could then be printed to the screen
      Parameters:     None
      Preconditions:  None
@@ -129,47 +130,47 @@ public class DeviceTimes {
     public float getDeltaHost() { return deltaHost; }
     public float getDeltaKu() { return deltaKu; }
 
-    // setters
-    private void setDelta(DeviceTimes dt) {
-        if (isHost(dt)) {
-            deltaHost = getDeltaSec(dt);
-        } else if (isKu(dt)) {
-            deltaKu = getDeltaSec(dt);
-        } else {
-            throw new IllegalArgumentException("invalid argument for device, not in (Ku_AOS, HOST)");
-        }
-    }
-
-    private Float getDeltaSec(DeviceTimes dt) {
+    private Float getDeltaSec(DeviceDeltas dd) {
         Calendar otherTime = Calendar.getInstance();
-        otherTime.setTime(dt.time);
+        otherTime.setTime(dd.time);
         Calendar myTime = Calendar.getInstance();
         myTime.setTime(time);
         return (float) (myTime.getTimeInMillis() - otherTime.getTimeInMillis()) / 1000;
     }
 
-    private static Boolean isHost(DeviceTimes dt) { return dt.device.equals("host"); }
+    // setters
+    private void setDelta(DeviceDeltas dd) {
+        if (isHost(dd)) {
+            deltaHost = getDeltaSec(dd);
+        } else if (isKu(dd)) {
+            deltaKu = getDeltaSec(dd);
+        } else {
+            throw new IllegalArgumentException("invalid argument for device, not in (Ku_AOS, HOST)");
+        }
+    }
 
-    private static Boolean isKu(DeviceTimes dt) { return dt.device.equals("ku_aos"); }
+    private static Boolean isHost(DeviceDeltas dd) { return dd.device.equals("host"); }
+
+    private static Boolean isKu(DeviceDeltas dd) { return dd.device.equals("ku_aos"); }
 
     /******************************************************/
-    /* public action methods for manipulating DeviceTimes */
+    /* public action methods for manipulating DeviceDeltas */
     /******************************************************/
 
     /**********************************************************
      Method:         subtract
-     Purpose:        subtract two DeviceTimes, a minus b, where a is the "this"
+     Purpose:        subtract two DeviceDeltas, a minus b, where a is the "this"
                      object, and b is passed as the input parameter
      Parameters:     b, the fraction to subtract from "this"
-     Preconditions:  both DeviceTimes a and b must contain valid times
+     Preconditions:  both DeviceDeltas a and b must contain valid times
      Postconditions: None
      ***********************************************************/
-    private float subtract(DeviceTimes b) {
+    private float subtract(DeviceDeltas b) {
         // check preconditions
         if (time == b.time)
-            throw new IllegalArgumentException("FIXME the times were the same!");
-        // create new fraction to return as difference
-        float diff = 123.456f;
+            throw new IllegalArgumentException("FIXME just testing: the times were the same!");
+        // create new value to return as difference
+        float diff = this.time.getTime() - b.time.getTime();
         return diff;
     }
 
@@ -231,12 +232,12 @@ public class DeviceTimes {
 
 /*        // Get device times mapping from result text (string)
         String result = "2015-06-17 butters host\n--------------------------------------\nbegin\n2015:168:20:09:00 butters HOST\n2015:168:20:09:15 Ku_AOS GSE\n2015:168:20:09:15 122-f02 EE\n2015:168:20:09:16 122-f03 EE";
-        TreeMap<String,DeviceTimes> sorted_map = getSortedMap(result);
+        TreeMap<String,DeviceDeltas> sorted_map = getSortedMap(result);
 
     	// Iterate to display sorted mapped values
         try {
-            for (TreeMap.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
-                DeviceTimes dev = entry.getValue();
+            for (TreeMap.Entry<String, DeviceDeltas> entry: sorted_map.entrySet()) {
+                DeviceDeltas dev = entry.getValue();
                 System.out.println(dev);
                 if (dev.device.equals("host")) System.out.println(new String(new char[80]).replace("\0", "-"));
             }
@@ -253,20 +254,20 @@ public class DeviceTimes {
 
     }
 
-    public static TreeMap<String, DeviceTimes> getSortedMap( String result ){
+    public static TreeMap<String, DeviceDeltas> getSortedMap( String result ){
 
         // Get device times mapping from result text (string)
-        Map<String,DeviceTimes> map = getMapFromResultString(result);
-        DeviceTimesComparator dtc =  new DeviceTimesComparator(map);
-        TreeMap<String,DeviceTimes> sorted_map = new TreeMap<String,DeviceTimes>(dtc);
+        Map<String,DeviceDeltas> map = getMapFromResultString(result);
+        DeviceDeltasComparator dtc =  new DeviceDeltasComparator(map);
+        TreeMap<String,DeviceDeltas> sorted_map = new TreeMap<String,DeviceDeltas>(dtc);
 
         // Sort by GMT
         sorted_map.putAll(map);
 
         // Iterate sorted_map entries to establish deltas
         try {
-            for (Map.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
-                DeviceTimes dev = entry.getValue();
+            for (Map.Entry<String, DeviceDeltas> entry: sorted_map.entrySet()) {
+                DeviceDeltas dev = entry.getValue();
                 dev.setDelta(map.get("host"));
                 dev.setDelta(map.get("ku_aos"));
             }
@@ -279,10 +280,10 @@ public class DeviceTimes {
         return sorted_map;
     }
 
-    private static Map<String, DeviceTimes> getMapFromResultString(String result) {
+    private static Map<String, DeviceDeltas> getMapFromResultString(String result) {
 
         // Iterate over lines, put usable ones into map
-        Map<String, DeviceTimes> map = new HashMap<String, DeviceTimes>();
+        Map<String, DeviceDeltas> map = new HashMap<String, DeviceDeltas>();
 
         String[] lines = result.split("\\r?\\n");
         for (String line: lines) {
@@ -292,20 +293,20 @@ public class DeviceTimes {
             if (line.startsWith("begin") || line.startsWith("end")) continue;
             if (line.startsWith("2015-") || line.startsWith("---")) continue;
             if (line.startsWith("yyyy") || line.startsWith("xxx")) continue;
-            DeviceTimes dt = new DeviceTimes(line);
-            map.put(dt.device, dt);
+            DeviceDeltas dd = new DeviceDeltas(line);
+            map.put(dd.device, dd);
         }
 
         return map;
 
     }
 
-    private static Map<String, DeviceTimes> getMapFromFile(String fname) {
+    private static Map<String, DeviceDeltas> getMapFromFile(String fname) {
         //Get the text file
         File file = new File(fname);
 
         //Read text from file, put into map
-        Map<String, DeviceTimes> map = new HashMap<String, DeviceTimes>();
+        Map<String, DeviceDeltas> map = new HashMap<String, DeviceDeltas>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
@@ -315,8 +316,8 @@ public class DeviceTimes {
             	if ( line.startsWith("begin") || line.startsWith("end") ) continue;
             	if ( line.startsWith("2015-") || line.startsWith("---") ) continue;            	
             	if ( line.startsWith("yyyy")  || line.startsWith("xxx") ) continue;            	
-                DeviceTimes dt = new DeviceTimes(line);
-                map.put(dt.device, dt);
+                DeviceDeltas dd = new DeviceDeltas(line);
+                map.put(dd.device, dd);
             }
             br.close();
         } catch (IOException e) {
@@ -340,9 +341,12 @@ public class DeviceTimes {
         
     }
 
-    public static SpannableString getSpannableFromMap(TreeMap<String, DeviceTimes> sorted_map, List<String> ignore_devices) {
+    public static SpannableString getSpannableFromMap(TreeMap<String, DeviceDeltas> sorted_map, List<String> ignore_devices, TextView tvResult) {
 
+        //List<SpannableString> results = new ArrayList<SpannableString>();
         int start;
+        int countBadDeltaHosts = 0;
+        int countBadDeltaKus = 0;
 
         // now we have sorted map, so iterate to build sorted, formatted spannables
         SpannableStringBuilder deviceLines = new SpannableStringBuilder();
@@ -353,8 +357,8 @@ public class DeviceTimes {
             deviceLines.append("----------------------------------\n");
             deviceLines.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-            for (TreeMap.Entry<String, DeviceTimes> entry: sorted_map.entrySet()) {
-                DeviceTimes dev = entry.getValue();
+            for (TreeMap.Entry<String, DeviceDeltas> entry: sorted_map.entrySet()) {
+                DeviceDeltas dev = entry.getValue();
                 String device_name = dev.getDevice();
                 Date device_time = dev.getTime();
                 float device_dh = dev.getDeltaHost();
@@ -366,7 +370,6 @@ public class DeviceTimes {
                 // TODO make a home for snippet keeper for repeat character like this
                 // the next line shows how to repeat char "-" 80 times
                 //    Log.i("SEP", new String(new char[80]).replace("\0", "-"));
-
 
                 // if host, then make this a distinctive line via bg color
                 if (device_name.equals("host")) {
@@ -382,6 +385,7 @@ public class DeviceTimes {
                     deviceLines.setSpan(new BackgroundColorSpan(Color.WHITE), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                 }
+                // if this is device to ignore, dim this row
                 else if (ignore_devices.contains(device_name)) {
 
                     start = deviceLines.length();
@@ -395,6 +399,7 @@ public class DeviceTimes {
                     //deviceLines.setSpan(new BackgroundColorSpan(Color.BLACK), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                 }
+                // otherwise, we have a device to consider for alarm (check its dh and dk)
                 else {
 
                     // device time DOY: is plain
@@ -405,12 +410,13 @@ public class DeviceTimes {
                     deviceLines.append(HHMMSS.format(device_time));
                     deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
+                    // TODO for out of range dh (or dk), make red that value and device name too
                     // deltaHost span
                     //start = deviceLines.length();
                     float dh = device_dh;
                     if (dh < -999.9) {
                         dh = -999.9f;
-                    } else if (dh > 999.9) {
+                    } else if (dh > 999.9f) {
                         dh = 999.9f;
                     }
                     deviceLines.append(String.format(" %6.1f", dh));
@@ -423,7 +429,7 @@ public class DeviceTimes {
                     boolean clipped = false;
                     if (dk < -999.9) {
                         dk = -999.9f; clipped = true;
-                    } else if (dk > 999.9) {
+                    } else if (dk > 999.9f) {
                         dk = 999.9f;  clipped = true;
                     }
                     deviceLines.append(String.format(" %6.1f", dk));
@@ -436,21 +442,60 @@ public class DeviceTimes {
 
                     // device name is clickable linked to WHAT?
                     deviceLines.append("  ");
-                    start = deviceLines.length();
+                    //start = deviceLines.length();
                     deviceLines.append(padRight(device_name, 12));
                     //deviceLines.setSpan(new URLSpan("http://pims.grc.nasa.gov/plots/sams/121f03/121f03.jpg"), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    // check dh
+                    if (dh < 13.0f || dh > 17.0f) { countBadDeltaHosts++; }
+
+                    // check dk
+                    if (Math.abs(dk) > 3.0f) { countBadDeltaKus++; }
 
                 }
 
                 deviceLines.append("\n");
 
+                // construct result line spannable string
+                SpannableStringBuilder resultLine = new SpannableStringBuilder();
+                int startResLine = resultLine.length();
+                if (countBadDeltaHosts + countBadDeltaKus == 0) {
+                    resultLine.append("All host deltas okay, and all Ku deltas okay.");
+                    resultLine.setSpan(new ForegroundColorSpan(0xFFCC5500), startResLine, resultLine.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+                else {
+                    // TODO alarm somewhere in/after this else clause [keep track of 3 strikes before alarming?]
+                    startResLine = resultLine.length();
+                    if (countBadDeltaHosts > 0) {
+                        resultLine.append(String.format("%d bad host deltas, ", countBadDeltaHosts));
+                        resultLine.setSpan(new ForegroundColorSpan(Color.RED), startResLine, resultLine.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+                    else {
+                        resultLine.append("all host deltas are ok, ");
+                        resultLine.setSpan(new ForegroundColorSpan(0xFFCC5500), startResLine, resultLine.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+                    startResLine = resultLine.length();
+                    if (countBadDeltaKus > 0) {
+                        resultLine.append(String.format("%d bad Ku deltas.", countBadDeltaKus));
+                        resultLine.setSpan(new ForegroundColorSpan(Color.RED), startResLine, resultLine.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+                    else {
+                        resultLine.append("all Ku deltas are ok.");
+                        resultLine.setSpan(new ForegroundColorSpan(0xFFCC5500), startResLine, resultLine.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+                }
+                tvResult.setText(resultLine, TextView.BufferType.SPANNABLE);
+
             }
         } catch (Exception e) {
-            //You'll need to add proper error handling here
-            Log.i("EXCEPT", "SOMETHING WRONG WITH ENTRIES IN MAP...GOT ku_aos AND host ENTRIES?");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
         return SpannableString.valueOf(deviceLines);
+        /*results.add(SpannableString.valueOf(resultLine));
+        results.add(SpannableString.valueOf(deviceLines));
+        return results;*/
 
     }
 

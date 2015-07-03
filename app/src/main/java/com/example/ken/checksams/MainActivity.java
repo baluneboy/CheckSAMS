@@ -65,7 +65,8 @@ import java.util.TreeMap;
 
 import static java.lang.String.*;
 
-import com.example.ken.checksams.DeviceTimes;
+import com.example.ken.checksams.DeviceDeltas;
+import com.example.ken.checksams.DigestDevices;
 
 public class MainActivity extends Activity  {
 
@@ -73,11 +74,12 @@ public class MainActivity extends Activity  {
     private TextView mTextViewResult;
     private TextView mTextViewDevices;
 
-    TextView tvPrefs;
+    public TextView mTextViewPrefs;
+
     //private Uri mChosenRingtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
     private Uri mChosenRingtoneUri = Uri.parse("android.resource://com.example.ken.checksams/" + R.raw.quindar_push_rel_zing_mp3);
-    private final int REQUESTCODE_PICK_RINGTONE = 5;
-    private final int REQUESTCODE_PICK_AUDIO = 4;
+    private final int mREQUESTCODE_PICK_RINGTONE = 5;
+    private final int mREQUESTCODE_PICK_AUDIO = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,8 +95,8 @@ public class MainActivity extends Activity  {
         tcClock.setFormat24Hour("H:mm");
 
         showToast("Get SAMS info from web...", Toast.LENGTH_SHORT);
-        updateKuClip();
-        updateSensorTimes();
+        updateSensorTimesHtmlWebView();
+        updateSensorTimesTextView();
 
         // FIXME set default pref values in MainActivity does not work
         // set default preference values
@@ -107,7 +109,7 @@ public class MainActivity extends Activity  {
         //mTextViewResult.setText(getSampleClunky(), TextView.BufferType.SPANNABLE);
         mTextViewResult.setText(getSampleSpannable(), TextView.BufferType.SPANNABLE);
 
-        tvPrefs = (TextView) findViewById(R.id.txtPrefs);
+        mTextViewPrefs = (TextView) findViewById(R.id.txtPrefs);
 
         displaySharedPreferences();
     }
@@ -137,10 +139,10 @@ public class MainActivity extends Activity  {
         return SpannableString.valueOf(deviceTime);
     }
 
-    private void updateSensorTimes() {
+    private void updateSensorTimesTextView() {
         String url2 = "http://pims.grc.nasa.gov/plots/user/sams/status/sensortimes.txt";
-        new GetStringFromUrl().execute(url2);
-        mTextViewResult.setText("The bottom line might change here.");
+        new ProcessSensorTimesTxtFromWeb().execute(url2);
+        mTextViewResult.setText("One-liner for results will change via AsyncTask...");
         mTextViewResult.setTextColor(Color.YELLOW);
     }
 
@@ -175,7 +177,7 @@ public class MainActivity extends Activity  {
 
     }
 
-    private void updateKuClip() {
+    private void updateSensorTimesHtmlWebView() {
         String url = "http://pims.grc.nasa.gov/plots/user/sams/status/sensortimes.html";
         mWebViewKu.loadUrl(url);
     }
@@ -224,21 +226,27 @@ public class MainActivity extends Activity  {
 
             // Refresh from web
             case R.id.menu_action1:
-                //showToast("Refresh not implemented yet :(", Toast.LENGTH_SHORT);
-                updateKuClip();
-                updateSensorTimes();
+                updateSensorTimesHtmlWebView();
+                updateSensorTimesTextView();
+                // FIXME only sound the alarm under the right conditions, but for now just do it
+                soundTheAlarm();
                 return true;
 
             // Show prefs
             case R.id.menu_action2:
+
+                // firstly, display prefs
                 displaySharedPreferences();
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+                // secondly, if alarm is on, then loop the notify sound preferred number of times
+/*                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                 boolean alarmOnCheckBox = prefs.getBoolean("alarmOnCheckBox", false);
                 if (alarmOnCheckBox) {
                     String listPrefs = prefs.getString("alarmRepeatListPref", "Default list prefs");
                     int count = Integer.parseInt(listPrefs);
                     loopNotifySound(count);
-                }
+                }*/
+                soundTheAlarm();
                 return true;
 
             // SD Card prefs
@@ -258,27 +266,37 @@ public class MainActivity extends Activity  {
         }
     }
 
+    private void soundTheAlarm() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        boolean alarmOnCheckBox = prefs.getBoolean("alarmOnCheckBox", false);
+        if (alarmOnCheckBox) {
+            String listPrefs = prefs.getString("alarmRepeatListPref", "Default list prefs");
+            int count = Integer.parseInt(listPrefs);
+            loopNotifySound(count);
+        }
+    }
+
     private void pickRingtone() {
         Intent ringtoneIntent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
         ringtoneIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
         ringtoneIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Select Tone");
         ringtoneIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, (Uri) null);
-        this.startActivityForResult(ringtoneIntent, this.REQUESTCODE_PICK_RINGTONE);
+        this.startActivityForResult(ringtoneIntent, this.mREQUESTCODE_PICK_RINGTONE);
     }
 
     private void pickFile() {
         Intent mediaIntent = new Intent(Intent.ACTION_GET_CONTENT);
         mediaIntent.setType("audio/*"); //set mime type as per requirement
-        this.startActivityForResult(mediaIntent, this.REQUESTCODE_PICK_AUDIO);
+        this.startActivityForResult(mediaIntent, this.mREQUESTCODE_PICK_AUDIO);
     }
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
-        if (resultCode == Activity.RESULT_OK && requestCode == this.REQUESTCODE_PICK_RINGTONE) {
+        if (resultCode == Activity.RESULT_OK && requestCode == this.mREQUESTCODE_PICK_RINGTONE) {
             Uri uri = intent.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
             if (uri != null) { this.mChosenRingtoneUri = uri; }
         }
-        if (resultCode == Activity.RESULT_OK && requestCode == this.REQUESTCODE_PICK_AUDIO) {
+        if (resultCode == Activity.RESULT_OK && requestCode == this.mREQUESTCODE_PICK_AUDIO) {
             Uri uri = intent.getData();
             if (uri != null) { this.mChosenRingtoneUri = uri; }
         }
@@ -330,11 +348,11 @@ public class MainActivity extends Activity  {
         builder.append("es05rtCheckBox: " + String.valueOf(es05rtCheckBox) + "\n");
         builder.append("es06rtCheckBox: " + String.valueOf(es06rtCheckBox) + "\n");
 
-        tvPrefs.setText(builder.toString());
+        mTextViewPrefs.setText(builder.toString());
         Log.i("Ken Prefs are:", builder.toString());
     }
 
-    private class GetStringFromUrl extends AsyncTask<String, Void, String> {
+    private class ProcessSensorTimesTxtFromWeb extends AsyncTask<String, Void, String> {
 
         ProgressDialog dialog ;
 
@@ -390,8 +408,8 @@ public class MainActivity extends Activity  {
                 mTextViewDevices.setText("Error in downloading. Please try again.");
             } else {
 
-                // at this point, result is big string with newline characters
-                TreeMap<String,DeviceTimes> sorted_map = DeviceTimes.getSortedMap(result);
+                // at this point, result is big string: several DeviceDeltas lines with newline characters
+                TreeMap<String,DeviceDeltas> sorted_map = DeviceDeltas.getSortedMap(result);
 
                 // FIXME with better way to handle these prefs
                 List<String> ignore_devices = new ArrayList<String>();
@@ -403,14 +421,26 @@ public class MainActivity extends Activity  {
                 if (!es05rtCheckBox) { ignore_devices.add("es05rt"); }
                 if (!es06rtCheckBox) { ignore_devices.add("es06rt"); }
 
-                // now we have sorted map, so iterate to build sorted, formatted spannables
-                SpannableString resultSpannable = DeviceTimes.getSpannableFromMap(sorted_map, ignore_devices);
+                // FIXME use different input profile in DigestDevices to get ranges from prefs...
+                // ...AFTER adding XML for ranges FIRST.
+
+                // now we have sorted map, so iterate over devices to digest info
+                DigestDevices digestDevices = new DigestDevices(sorted_map, ignore_devices);
+                digestDevices.processMap();
+
+/*                Log.i("DIG", "bad ho count = " + digestDevices.getCountBadDeltaHosts());
+                Log.i("DIG", "bad ku count = " + digestDevices.getCountBadDeltaKus());
+                Log.i("DIG", "ho range = " + digestDevices.getDeltaHostRange().toString());
+                Log.i("DIG", "ku range = " + digestDevices.getDeltaKuRange().toString());*/
 
                 // make our ClickableSpans and URLSpans work
                 mTextViewDevices.setMovementMethod(LinkMovementMethod.getInstance());
 
-                // populate textview with device times info in spannable form
-                mTextViewDevices.setText(resultSpannable, TextView.BufferType.SPANNABLE);
+                // populate top result (one-liner) textview with alarm results in spannable text form
+                mTextViewResult.setText(digestDevices.getResultOneLiner(), TextView.BufferType.SPANNABLE);
+
+                // populate devices textview with device times info in spannable form
+                mTextViewDevices.setText(digestDevices.getDeviceLines(), TextView.BufferType.SPANNABLE);
 
             }
 
