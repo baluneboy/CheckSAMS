@@ -2,6 +2,7 @@ import android.util.Log;
 
 import java.util.Calendar;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,19 @@ public class Hello {
 		int doy = now.get(Calendar.DAY_OF_YEAR);
 		String result = String.format("%02d/%02d/%4d, Day %03d", month, day, year, doy);
 		System.out.println(result);
-		
+
+		// Get top of next hour
+		Date whateverDateYouWant = new Date();
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(whateverDateYouWant);
+
+		int unroundedMinutes = calendar.get(Calendar.MINUTE);
+		int mod = unroundedMinutes % 60;
+		calendar.add(Calendar.MINUTE, mod < 30 ? +mod : (60-mod));
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		System.out.println(calendar.getTime());
+
 		// create map to store
 		Map<String, List<String>> map = new HashMap<String, List<String>>();
 		

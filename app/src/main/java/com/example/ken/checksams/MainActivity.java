@@ -1,10 +1,13 @@
 package com.example.ken.checksams;
 
-import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -16,29 +19,20 @@ import android.os.Bundle;
 
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
-import android.text.style.BackgroundColorSpan;
-import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.RelativeSizeSpan;
-import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import android.widget.Button;
 import android.widget.TextClock;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,22 +45,20 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 import java.util.TreeMap;
 
-import static java.lang.String.*;
+/*import static java.lang.String.*;
 
 import com.example.ken.checksams.DeviceDeltas;
 import com.example.ken.checksams.DigestDevices;
+import com.example.ken.checksams.MyDateUtils;*/
 
 public class MainActivity extends Activity  {
 
@@ -80,6 +72,10 @@ public class MainActivity extends Activity  {
     private Uri mChosenRingtoneUri = Uri.parse("android.resource://com.example.ken.checksams/" + R.raw.quindar_push_rel_zing_mp3);
     private final int mREQUESTCODE_PICK_RINGTONE = 5;
     private final int mREQUESTCODE_PICK_AUDIO = 4;
+
+    private AlarmManager mAlarmMgr;
+    private Intent mAlarmRcvIntent;
+    private PendingIntent mAlarmIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +108,41 @@ public class MainActivity extends Activity  {
         mTextViewPrefs = (TextView) findViewById(R.id.txtPrefs);
 
         displaySharedPreferences();
+
+        Context context = getApplicationContext();
+        mAlarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        mAlarmRcvIntent = new Intent(context, MyAlarmReceiver.class);
+        mAlarmIntent = PendingIntent.getBroadcast(context, 0, mAlarmRcvIntent, 0);
+
+        // Set the alarm to start at the top of next minute
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar = MyDateUtils.toNextWholeMinute(calendar);
+
+        // setRepeating() lets you specify a precise custom interval; e.g. 15 seconds
+        mAlarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 1000 * 15, mAlarmIntent);
+
+    }
+
+    void Alarm(Context context, Calendar c)
+    {
+        AlarmManager alrm = (AlarmManager)context.getSystemService(ALARM_SERVICE);
+        final String SOME_ACTION = "com.example.ken.checksams.AlarmReceiver";
+        IntentFilter intentFilter = new IntentFilter(SOME_ACTION);
+        TneAlarmReceiver mReceiver = new TneAlarmReceiver();
+        context.registerReceiver(mReceiver, intentFilter);
+        Intent i2 = new Intent(SOME_ACTION);
+        PendingIntent pi = PendingIntent.getBroadcast(context, 0, i2, 0);
+        alrm.set(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pi);
+        Toast.makeText(context, "Added", Toast.LENGTH_LONG).show();
+    }
+
+    class TneAlarmReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent arg1) {
+            // TODO Auto-generated method stub
+            Toast.makeText(context, "Started", Toast.LENGTH_LONG).show();
+        }
     }
 
     private SpannableString getSampleSpannable() {
@@ -198,13 +229,14 @@ public class MainActivity extends Activity  {
         toast.show();
     }
 
-    private class MyBrowser extends WebViewClient {
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            view.loadUrl(url);
-            return true;
-        }
-    }
+/*    @Override
+    protected void onNewIntent(Intent intent) {
+        mTimeStringFromBroadcast = intent.getStringExtra("FROMBROADCASTRECEIVER");
+        Date d = MyDateUtils.getDateFromString(mTimeStringFromBroadcast);
+        Log.d("MainActivity", "onNewIntent got " + d.toString());
+        showToast("onIntent got " + mTimeStringFromBroadcast, Toast.LENGTH_SHORT);
+        super.onNewIntent(intent);
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -252,6 +284,24 @@ public class MainActivity extends Activity  {
             case R.id.menu_action4:
                 Log.i("Kenfo", "Ringtone select...");
                 pickRingtone();
+                return true;
+
+            // START ALARM SERVICE
+            // --------
+            case R.id.menu_action5:
+                Log.i("Kenfo", "START ALARM SERVICE...");
+                return true;
+
+            // STOP ALARM SERVICE
+            // --------
+            case R.id.menu_action6:
+                Log.i("Kenfo", "STOP ALARM SERVICE...");
+
+                // If the alarm has been set, cancel it.
+                if (mAlarmMgr!= null) {
+                    mAlarmMgr.cancel(mAlarmIntent);
+                }
+
                 return true;
 
             default:

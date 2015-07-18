@@ -217,27 +217,27 @@ public class DigestDevices {
         SpannableStringBuilder resultLine = new SpannableStringBuilder();
         int startResLine = resultLine.length();
         if (countBadDeltaHosts + countBadDeltaKus == 0) {
-            resultLine.append("All host deltas okay, and all Ku deltas okay.");
+            resultLine.append("All dHost okay, and all dKu okay.");
             resultLine.setSpan(new ForegroundColorSpan(0xFFCC5500), startResLine, resultLine.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         else {
             // TODO alarm somewhere in/after this else clause [keep track of 3 strikes before alarming?]
             startResLine = resultLine.length();
             if (countBadDeltaHosts > 0) {
-                resultLine.append(String.format("%d bad host deltas, ", countBadDeltaHosts));
+                resultLine.append(String.format("%d bad dHost, ", countBadDeltaHosts));
                 resultLine.setSpan(new ForegroundColorSpan(Color.RED), startResLine, resultLine.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
             else {
-                resultLine.append("all host deltas are ok, ");
+                resultLine.append("all dHost okay, ");
                 resultLine.setSpan(new ForegroundColorSpan(0xFFCC5500), startResLine, resultLine.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
             startResLine = resultLine.length();
             if (countBadDeltaKus > 0) {
-                resultLine.append(String.format("%d bad Ku deltas.", countBadDeltaKus));
+                resultLine.append(String.format("%d bad dKu.", countBadDeltaKus));
                 resultLine.setSpan(new ForegroundColorSpan(Color.RED), startResLine, resultLine.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
             else {
-                resultLine.append("all Ku deltas are ok.");
+                resultLine.append("all dKu okay.");
                 resultLine.setSpan(new ForegroundColorSpan(0xFFCC5500), startResLine, resultLine.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }

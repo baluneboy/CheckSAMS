@@ -23,6 +23,12 @@
             android:theme="@android:style/Theme.Black.NoTitleBar" >
         </activity>
 
+        <receiver android:name="MyAlarmReceiver">
+            <intent-filter>
+                <action android:name="com.example.ken.checksams" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

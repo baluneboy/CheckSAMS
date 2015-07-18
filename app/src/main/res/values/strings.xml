@@ -12,6 +12,8 @@
     <string name="action_settings2">Show</string>
     <string name="action_settings3">SD Card</string>
     <string name="action_settings4">Ringtone</string>
+    <string name="action_settings5">Start Alarm Service</string>
+    <string name="action_settings6">Stop Alarm Service</string>
 
     <!-- FIXME why does D or DDD not give DOY? -->
     <!-- The "color" attribute is an alias for "fgcolor" and was introduced in API level 18.  -->
