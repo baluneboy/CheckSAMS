@@ -1,5 +1,6 @@
 package com.example.ken.checksams;
 
+// TODO need base utility project for utils like this one (no longer used in this app)
 public class Tuples {
 
     public static <T1,T2> Tuple2<T1,T2> tuple2(T1 t1, T2 t2){

@@ -8,6 +8,29 @@ import java.util.TreeMap;
 
 import com.example.ken.checksams.DeviceDeltas;
 
+class DeviceDeltasComparator implements Comparator<String> {
+
+    Map<String, DeviceDeltas> base;
+    public DeviceDeltasComparator(Map<String, DeviceDeltas> base) {
+        this.base = base;
+    }
+
+    // Note: this comparator imposes orderings that are NOT consistent with equals.
+    public int compare(String a, String b) {
+        Calendar t1 = Calendar.getInstance();
+        t1.setTime(base.get(a).getTime());
+        Calendar t2 = Calendar.getInstance();
+        t2.setTime(base.get(b).getTime());
+        Long aTime = t1.getTimeInMillis();
+        Long bTime = t2.getTimeInMillis();
+        if (aTime >= bTime) {
+            return -1;
+        } else {
+            return 1;
+        } // returning 0 would merge keys
+    }
+}
+
 public class MySortedMap {
 
     public static void main(String[] args) {
@@ -58,28 +81,5 @@ public class MySortedMap {
             System.out.println("SOMETHING WRONG WITH ENTRIES IN MAP.");
         }           
         
-    }
-}
-
-class DeviceDeltasComparator implements Comparator<String> {
-
-    Map<String, DeviceDeltas> base;
-    public DeviceDeltasComparator(Map<String, DeviceDeltas> base) {
-        this.base = base;
-    }
-
-    // Note: this comparator imposes orderings that are NOT consistent with equals.    
-    public int compare(String a, String b) {
-        Calendar t1 = Calendar.getInstance();
-        t1.setTime(base.get(a).getTime());
-        Calendar t2 = Calendar.getInstance();
-        t2.setTime(base.get(b).getTime());
-    	Long aTime = t1.getTimeInMillis();
-    	Long bTime = t2.getTimeInMillis(); 	
-        if (aTime >= bTime) {
-            return -1;
-        } else {
-            return 1;
-        } // returning 0 would merge keys
     }
 }

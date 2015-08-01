@@ -148,16 +148,16 @@ public class DigestDevices {
                     //deviceLines.setSpan(new BackgroundColorSpan(Color.BLACK), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                 }
-                // otherwise, we have a device to consider for alarm (check its dh and dk)
+                // otherwise, we have a device to consider for sound notify (check its dh and dk)
                 else {
 
                     // device time DOY: is plain
                     deviceLines.append(DOY.format(device_time));
 
-                    // device time HH:MM:SS is orange
+                    // device time HH:MM:SS is white
                     start = deviceLines.length();
                     deviceLines.append(HHMMSS.format(device_time));
-                    deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    //deviceLines.setSpan(new ForegroundColorSpan(0xFFCC5500), start, deviceLines.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                     // TODO for out of range dh (or dk), make red that value and device name too
                     // deltaHost span

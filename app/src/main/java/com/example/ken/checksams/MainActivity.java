@@ -31,7 +31,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import android.widget.TextClock;
 import android.widget.TextView;
@@ -53,12 +52,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TreeMap;
-
-/*import static java.lang.String.*;
-
-import com.example.ken.checksams.DeviceDeltas;
-import com.example.ken.checksams.DigestDevices;
-import com.example.ken.checksams.MyDateUtils;*/
 
 public class MainActivity extends Activity  {
 
@@ -110,51 +103,10 @@ public class MainActivity extends Activity  {
 
         displaySharedPreferences();
 
-        // Set the alarm to start at the top of next minute
-        Context context = getApplicationContext();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar = MyDateUtils.toNextWholeMinute(calendar);
-        initializeAlarm(context, calendar);
+        loopNotifySound(2);
 
-    }
+        showToast("READY");
 
-    void initializeAlarm(Context context, Calendar c)
-    {
-        final String SOME_ACTION = "com.example.ken.checksams.AlarmReceiver";
-        mAlarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
-        IntentFilter intentFilter = new IntentFilter(SOME_ACTION);
-        AlarmReceiver mAlarmReceiver = new AlarmReceiver();
-        context.registerReceiver(mAlarmReceiver, intentFilter);
-        Intent i2 = new Intent(SOME_ACTION);
-        mAlarmIntent = PendingIntent.getBroadcast(context, 0, i2, 0);
-        // setRepeating() lets you specify a precise custom interval; e.g. 10 seconds
-        // HOWEVER, this repeat interval can get delayed (not cumulative though, so ok?)
-        mAlarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), 1000 * 10, mAlarmIntent);
-        mAlarmCount = 0;
-        Toast.makeText(context, "Initialized Alarm", Toast.LENGTH_SHORT).show();
-    }
-
-    class AlarmReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent arg1) {
-            mAlarmCount++;
-            Toast.makeText(context, "Alarm # " + mAlarmCount + " started.", Toast.LENGTH_SHORT).show();
-            if (NoMoreAlarmsToDo()) {
-                Toast.makeText(context, "Stopping Alarm Service after " + mAlarmCount + " alarms.", Toast.LENGTH_LONG).show();
-                // If the alarm has been set, cancel it.
-                if (mAlarmMgr!= null) {
-                    mAlarmMgr.cancel(mAlarmIntent);
-                }
-            }
-        }
-    }
-
-    private boolean NoMoreAlarmsToDo() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String listPrefs = prefs.getString("alarmRepeatListPref", "Default list prefs");
-        int maxAlarms = Integer.parseInt(listPrefs);
-        return (mAlarmCount >= maxAlarms);
     }
 
     private SpannableString getSampleSpannable() {
@@ -189,37 +141,6 @@ public class MainActivity extends Activity  {
         mTextViewResult.setTextColor(Color.YELLOW);
     }
 
-    private void updateKuClipURLfromFile() {
-        //Get the text file
-        File sdcard = Environment.getExternalStorageDirectory();
-        File file = new File(sdcard, "Documents/getweb.txt");
-
-        //Read text from file
-        StringBuilder text = new StringBuilder();
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String line;
-
-            while ((line = br.readLine()) != null) {
-                text.append(line);
-                text.append('\n');
-            }
-            br.close();
-        } catch (IOException e) {
-            //You'll need to add proper error handling here
-            Log.w("Unhandled IOException", e.getMessage());
-            Log.v("Hello", "There");
-
-        }
-
-        Log.w("HERE IS FILE TEXT:", text.toString());
-        String url = text.toString();
-
-        mWebViewKu.loadUrl(url);
-
-    }
-
     private void updateSensorTimesHtmlWebView() {
         String url = "http://pims.grc.nasa.gov/plots/user/sams/status/sensortimes.html";
         mWebViewKu.loadUrl(url);
@@ -240,15 +161,6 @@ public class MainActivity extends Activity  {
         Toast toast = Toast.makeText(context, s, duration);
         toast.show();
     }
-
-/*    @Override
-    protected void onNewIntent(Intent intent) {
-        mTimeStringFromBroadcast = intent.getStringExtra("FROMBROADCASTRECEIVER");
-        Date d = MyDateUtils.getDateFromString(mTimeStringFromBroadcast);
-        Log.d("MainActivity", "onNewIntent got " + d.toString());
-        showToast("onIntent got " + mTimeStringFromBroadcast, Toast.LENGTH_SHORT);
-        super.onNewIntent(intent);
-    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -274,7 +186,6 @@ public class MainActivity extends Activity  {
             case R.id.menu_action1:
                 updateSensorTimesHtmlWebView();
                 updateSensorTimesTextView();
-                // FIXME only sound the alarm under the right conditions, but for now just do it
                 soundTheAlarm();
                 return true;
 
@@ -298,35 +209,19 @@ public class MainActivity extends Activity  {
                 pickRingtone();
                 return true;
 
-            // START ALARM SERVICE
-            // --------
-            case R.id.menu_action5:
-                Log.i("Kenfo", "START ALARM SERVICE...");
-                return true;
-
-            // STOP ALARM SERVICE
-            // --------
-            case R.id.menu_action6:
-                Log.i("Kenfo", "STOP ALARM SERVICE...");
-
-                // If the alarm has been set, cancel it.
-                if (mAlarmMgr!= null) {
-                    mAlarmMgr.cancel(mAlarmIntent);
-                }
-
-                return true;
-
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
+    // FIXME only sound the alarm under the right conditions, but for now just do it
     private void soundTheAlarm() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         boolean alarmOnCheckBox = prefs.getBoolean("alarmOnCheckBox", false);
         if (alarmOnCheckBox) {
             String listPrefs = prefs.getString("alarmRepeatListPref", "Default list prefs");
             int count = Integer.parseInt(listPrefs);
+            Log.i("soundTheAlarm", "loopNotifySound " + count + " times");
             loopNotifySound(count);
         }
     }
@@ -395,6 +290,7 @@ public class MainActivity extends Activity  {
         boolean es06rtCheckBox = prefs.getBoolean("es06rtCheckBox", false);
 
         StringBuilder builder = new StringBuilder();
+        builder.append("\n");
         builder.append("\n" + "Period (min): " + period + "\n");
         builder.append("Number of checks: " + nchk + "\n");
         builder.append("Alarm sound on: " + String.valueOf(alarmOnCheckBox) + "\n");
@@ -483,10 +379,10 @@ public class MainActivity extends Activity  {
                 DigestDevices digestDevices = new DigestDevices(sorted_map, ignore_devices);
                 digestDevices.processMap();
 
-/*                Log.i("DIG", "bad ho count = " + digestDevices.getCountBadDeltaHosts());
-                Log.i("DIG", "bad ku count = " + digestDevices.getCountBadDeltaKus());
-                Log.i("DIG", "ho range = " + digestDevices.getDeltaHostRange().toString());
-                Log.i("DIG", "ku range = " + digestDevices.getDeltaKuRange().toString());*/
+/*                Log.i("DIGEST", "bad ho count = " + digestDevices.getCountBadDeltaHosts());
+                Log.i("DIGEST", "bad ku count = " + digestDevices.getCountBadDeltaKus());
+                Log.i("DIGEST", "ho range = " + digestDevices.getDeltaHostRange().toString());
+                Log.i("DIGEST", "ku range = " + digestDevices.getDeltaKuRange().toString());*/
 
                 // make our ClickableSpans and URLSpans work
                 mTextViewDevices.setMovementMethod(LinkMovementMethod.getInstance());

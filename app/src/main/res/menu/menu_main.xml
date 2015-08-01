@@ -6,6 +6,4 @@
     <item android:id="@+id/menu_action2" android:title="@string/action_settings2"/>
     <item android:id="@+id/menu_action3" android:title="@string/action_settings3"/>
     <item android:id="@+id/menu_action4" android:title="@string/action_settings4"/>
-    <item android:id="@+id/menu_action5" android:title="@string/action_settings5"/>
-    <item android:id="@+id/menu_action6" android:title="@string/action_settings6"/>
 </menu>

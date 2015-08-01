@@ -29,8 +29,8 @@
             android:key="alarmRepeatListPref"
             android:entries="@array/alarmRepeatListOptions"
             android:entryValues="@array/alarmRepeatListValues"
-            android:summary="play alarm 3x"
-            android:defaultValue="play alarm 3x"
+            android:summary="3"
+            android:defaultValue="3"
             android:title="Alarm repeat count" />
     </PreferenceCategory>
 
