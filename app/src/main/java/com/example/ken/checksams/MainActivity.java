@@ -73,6 +73,7 @@ public class MainActivity extends Activity  {
     private final int mREQUESTCODE_PICK_RINGTONE = 5;
     private final int mREQUESTCODE_PICK_AUDIO = 4;
 
+    private int mAlarmCount;
     private AlarmManager mAlarmMgr;
     private Intent mAlarmRcvIntent;
     private PendingIntent mAlarmIntent;
@@ -109,40 +110,51 @@ public class MainActivity extends Activity  {
 
         displaySharedPreferences();
 
-        Context context = getApplicationContext();
-        mAlarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        mAlarmRcvIntent = new Intent(context, MyAlarmReceiver.class);
-        mAlarmIntent = PendingIntent.getBroadcast(context, 0, mAlarmRcvIntent, 0);
-
         // Set the alarm to start at the top of next minute
+        Context context = getApplicationContext();
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
         calendar = MyDateUtils.toNextWholeMinute(calendar);
-
-        // setRepeating() lets you specify a precise custom interval; e.g. 15 seconds
-        mAlarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 1000 * 15, mAlarmIntent);
+        initializeAlarm(context, calendar);
 
     }
 
-    void Alarm(Context context, Calendar c)
+    void initializeAlarm(Context context, Calendar c)
     {
-        AlarmManager alrm = (AlarmManager)context.getSystemService(ALARM_SERVICE);
         final String SOME_ACTION = "com.example.ken.checksams.AlarmReceiver";
+        mAlarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
         IntentFilter intentFilter = new IntentFilter(SOME_ACTION);
-        TneAlarmReceiver mReceiver = new TneAlarmReceiver();
-        context.registerReceiver(mReceiver, intentFilter);
+        AlarmReceiver mAlarmReceiver = new AlarmReceiver();
+        context.registerReceiver(mAlarmReceiver, intentFilter);
         Intent i2 = new Intent(SOME_ACTION);
-        PendingIntent pi = PendingIntent.getBroadcast(context, 0, i2, 0);
-        alrm.set(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pi);
-        Toast.makeText(context, "Added", Toast.LENGTH_LONG).show();
+        mAlarmIntent = PendingIntent.getBroadcast(context, 0, i2, 0);
+        // setRepeating() lets you specify a precise custom interval; e.g. 10 seconds
+        // HOWEVER, this repeat interval can get delayed (not cumulative though, so ok?)
+        mAlarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), 1000 * 10, mAlarmIntent);
+        mAlarmCount = 0;
+        Toast.makeText(context, "Initialized Alarm", Toast.LENGTH_SHORT).show();
     }
 
-    class TneAlarmReceiver extends BroadcastReceiver {
+    class AlarmReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent arg1) {
-            // TODO Auto-generated method stub
-            Toast.makeText(context, "Started", Toast.LENGTH_LONG).show();
+            mAlarmCount++;
+            Toast.makeText(context, "Alarm # " + mAlarmCount + " started.", Toast.LENGTH_SHORT).show();
+            if (NoMoreAlarmsToDo()) {
+                Toast.makeText(context, "Stopping Alarm Service after " + mAlarmCount + " alarms.", Toast.LENGTH_LONG).show();
+                // If the alarm has been set, cancel it.
+                if (mAlarmMgr!= null) {
+                    mAlarmMgr.cancel(mAlarmIntent);
+                }
+            }
         }
+    }
+
+    private boolean NoMoreAlarmsToDo() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String listPrefs = prefs.getString("alarmRepeatListPref", "Default list prefs");
+        int maxAlarms = Integer.parseInt(listPrefs);
+        return (mAlarmCount >= maxAlarms);
     }
 
     private SpannableString getSampleSpannable() {
