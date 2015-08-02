@@ -1,5 +1,14 @@
 package com.example.ken.checksams;
 
+// TODO move sounds to sd card with generic tell-tale names
+// like checksams_alarm_mp3 and checksams_chime_mp3
+// try to load from those locations; catch with default sounds
+
+// FIXME how about themes for "home" and "work" with different sound settings
+// based on day of week and time of day
+
+// FIXME figure out how to replace deprecated Http calls
+
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
